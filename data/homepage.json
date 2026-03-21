@@ -1,0 +1,12 @@
+{
+  "heroHeading": "test",
+  "heroText": "test",
+  "primaryButtonText": "See Events",
+  "secondaryButtonText": "Learn More",
+  "featureTitle": "Tonight at the Lounge",
+  "featureText": "test",
+  "featureItemOneTime": "4:00 PM",
+  "featureItemOneText": "Study hall opens and staff check-in begins.",
+  "featureItemTwoTime": "5:30 PM",
+  "featureItemTwoText": "Game tournament sign-ups and group activities start."
+}

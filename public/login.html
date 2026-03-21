@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>After Teen Lounge Login</title>
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card">
+      <div class="hero-logo-box login-logo-box">
+        <img src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="hero-logo-caption">Study · Play · Connect</div>
+      </div>
+
+      <div class="login-copy">
+        <h1>Admin Login</h1>
+        <p>
+          Sign in to manage homepage content, announcements, events, and future site sections.
+        </p>
+      </div>
+
+      <form class="login-form" method="POST" action="/login">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required />
+        </div>
+
+        <button class="btn btn-primary login-submit" type="submit">Log In</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

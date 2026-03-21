@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>After Teen Lounge - Calendar Manager</title>
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .calendar-layout {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .calendar-grid-wrap {
+      margin-bottom: 20px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .calendar-day {
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: 0.15s ease;
+    }
+
+    .calendar-day:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .calendar-day.has-event {
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.18);
+      font-weight: 700;
+    }
+
+    .calendar-day.today {
+      outline: 2px solid #22c55e;
+    }
+
+    .calendar-day.selected {
+      box-shadow: 0 0 0 2px rgba(255, 140, 47, 0.8) inset;
+    }
+
+    .calendar-day.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+
+    .calendar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 700px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .calendar-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .calendar-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .calendar-item.active {
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.14);
+    }
+
+    .calendar-item-date {
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .calendar-item-text {
+      font-size: 0.92rem;
+      opacity: 0.85;
+      line-height: 1.4;
+    }
+
+    .calendar-meta {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      opacity: 0.7;
+    }
+
+    .calendar-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .btn-danger {
+      background: #7f1d1d;
+      color: white;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #991b1b;
+    }
+
+    .empty-state {
+      opacity: 0.7;
+      padding: 14px 0;
+    }
+
+    .small-note {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .calendar-weekdays div {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      opacity: 0.7;
+      padding: 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 980px) {
+      .calendar-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="brand-text">
+          <h1>After Admin</h1>
+          <p>Calendar Manager</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-link" href="/admin">Dashboard</a>
+        <a class="nav-link" href="/admin/homepage">Homepage</a>
+        <a class="nav-link active" href="/admin/calendar">Calendar</a>
+        <a class="nav-link" href="/dashboard">Announcements</a>
+        <a class="nav-link" href="/logout">Logout</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <strong>Tonight Block Feed</strong>
+        <p>This page controls what appears under “Tonight at the Lounge” on the homepage.</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h2>Calendar Manager</h2>
+          <p>Pick a date, edit its schedule, click saved days, or delete them cleanly.</p>
+        </div>
+        <div class="status-pill">Editor</div>
+      </header>
+
+      <section class="module-card">
+        <div class="calendar-layout">
+          <div>
+            <h3>Edit Calendar Day</h3>
+
+            <div class="calendar-grid-wrap">
+              <div class="calendar-weekdays">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+              </div>
+              <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+
+            <p>Save one schedule per day. Clicking a saved day or a day in the grid loads it into the editor.</p>
+
+            <form class="login-form" method="POST" action="/admin/calendar/save" id="calendarForm">
+              <div class="form-group">
+                <label for="eventDate">Event Date</label>
+                <input id="eventDate" name="eventDate" type="date" required />
+              </div>
+
+              <div class="form-group">
+                <label for="featureText">Intro Text</label>
+                <input
+                  id="featureText"
+                  name="featureText"
+                  type="text"
+                  value="Open gym, art table, gaming corner, and quiet study room."
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="featureItemOneTime">Item One Time</label>
+                <input
+                  id="featureItemOneTime"
+                  name="featureItemOneTime"
+                  type="text"
+                  value="4:00 PM"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="featureItemOneText">Item One Text</label>
+                <input
+                  id="featureItemOneText"
+                  name="featureItemOneText"
+                  type="text"
+                  value="Study hall opens and staff check-in begins."
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="featureItemTwoTime">Item Two Time</label>
+                <input
+                  id="featureItemTwoTime"
+                  name="featureItemTwoTime"
+                  type="text"
+                  value="5:30 PM"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="featureItemTwoText">Item Two Text</label>
+                <input
+                  id="featureItemTwoText"
+                  name="featureItemTwoText"
+                  type="text"
+                  value="Game tournament sign-ups and group activities start."
+                />
+              </div>
+
+              <div class="calendar-actions">
+                <button class="btn btn-primary login-submit" type="submit">Save Calendar Day</button>
+                <button class="btn btn-secondary" type="button" id="newEntryBtn">New / Clear Form</button>
+                <button class="btn btn-danger" type="button" id="deleteEntryBtn">Delete Selected Day</button>
+              </div>
+
+              <p class="small-note" id="statusMessage"></p>
+            </form>
+          </div>
+
+          <div>
+            <h3>Saved Days</h3>
+            <p>Click a saved entry to retrieve and edit it.</p>
+            <div id="calendarList" class="calendar-list">
+              <div class="empty-state">Loading saved calendar days...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const defaults = {
+      featureText: 'Open gym, art table, gaming corner, and quiet study room.',
+      featureItemOneTime: '4:00 PM',
+      featureItemOneText: 'Study hall opens and staff check-in begins.',
+      featureItemTwoTime: '5:30 PM',
+      featureItemTwoText: 'Game tournament sign-ups and group activities start.'
+    };
+
+    function getChicagoTodayString() {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Chicago',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return formatter.format(new Date());
+    }
+
+    function formatPrettyDate(dateString) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function setStatus(message = '') {
+      document.getElementById('statusMessage').textContent = message;
+    }
+
+    function fillForm(data = {}, date = '') {
+      document.getElementById('eventDate').value = date || getChicagoTodayString();
+      document.getElementById('featureText').value = data.featureText || defaults.featureText;
+      document.getElementById('featureItemOneTime').value = data.featureItemOneTime || defaults.featureItemOneTime;
+      document.getElementById('featureItemOneText').value = data.featureItemOneText || defaults.featureItemOneText;
+      document.getElementById('featureItemTwoTime').value = data.featureItemTwoTime || defaults.featureItemTwoTime;
+      document.getElementById('featureItemTwoText').value = data.featureItemTwoText || defaults.featureItemTwoText;
+    }
+
+    function highlightSelected(date) {
+      document.querySelectorAll('.calendar-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.date === date);
+      });
+
+      document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.toggle('selected', day.dataset.date === date);
+      });
+    }
+
+    async function loadCalendarEntry(date) {
+      try {
+        const response = await fetch(`/api/calendar?date=${encodeURIComponent(date)}`);
+        if (!response.ok) throw new Error('Failed to load calendar entry');
+
+        const data = await response.json();
+        fillForm(data, date);
+        highlightSelected(date);
+
+        if (data && Object.keys(data).length) {
+          setStatus(`Loaded ${formatPrettyDate(date)}.`);
+        } else {
+          setStatus(`No saved entry for ${formatPrettyDate(date)}. You can create one.`);
+        }
+      } catch (error) {
+        console.error(error);
+        setStatus('Could not load that day.');
+      }
+    }
+
+    function renderCalendarGrid(events = []) {
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      const startDay = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+
+      const eventDates = new Set(events.map(e => e.date));
+      const selectedDate = document.getElementById('eventDate').value;
+      const todayStr = getChicagoTodayString();
+
+      for (let i = 0; i < startDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        grid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const localDate = new Date(year, month, day);
+        const yyyy = localDate.getFullYear();
+        const mm = String(localDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(localDate.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        const div = document.createElement('div');
+        div.className = 'calendar-day';
+        div.textContent = day;
+        div.dataset.date = dateStr;
+
+        if (eventDates.has(dateStr)) {
+          div.classList.add('has-event');
+        }
+
+        if (dateStr === todayStr) {
+          div.classList.add('today');
+        }
+
+        if (dateStr === selectedDate) {
+          div.classList.add('selected');
+        }
+
+        div.addEventListener('click', () => {
+          document.getElementById('eventDate').value = dateStr;
+          loadCalendarEntry(dateStr);
+        });
+
+        grid.appendChild(div);
+      }
+    }
+
+    async function loadCalendarList() {
+      const listEl = document.getElementById('calendarList');
+
+      try {
+        const response = await fetch('/api/calendar');
+        if (!response.ok) throw new Error('Failed to load calendar list');
+
+        const items = await response.json();
+
+        if (!items.length) {
+          listEl.innerHTML = '<div class="empty-state">No saved calendar days yet.</div>';
+          renderCalendarGrid([]);
+          return;
+        }
+
+        items.sort((a, b) => a.date.localeCompare(b.date));
+
+        listEl.innerHTML = items.map(item => `
+          <div class="calendar-item" data-date="${item.date}">
+            <div class="calendar-item-date">${formatPrettyDate(item.date)}</div>
+            <div class="calendar-item-text">${item.featureText || 'No intro text set.'}</div>
+            <div class="calendar-meta">
+              ${item.featureItemOneTime || '--'} · ${item.featureItemOneText || 'No item one'}
+            </div>
+          </div>
+        `).join('');
+
+        listEl.querySelectorAll('.calendar-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const date = item.dataset.date;
+            loadCalendarEntry(date);
+          });
+        });
+
+        renderCalendarGrid(items);
+
+        const selectedDate = document.getElementById('eventDate').value;
+        if (selectedDate) {
+          highlightSelected(selectedDate);
+        }
+      } catch (error) {
+        console.error(error);
+        listEl.innerHTML = '<div class="empty-state">Could not load saved days.</div>';
+        renderCalendarGrid([]);
+      }
+    }
+
+    async function deleteCurrentEntry() {
+      const date = document.getElementById('eventDate').value;
+
+      if (!date) {
+        setStatus('Pick a date first.');
+        return;
+      }
+
+      const confirmed = confirm(`Delete the calendar entry for ${formatPrettyDate(date)}?`);
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch('/admin/calendar/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ eventDate: date })
+        });
+
+        if (!response.ok) {
+          throw new Error('Delete failed');
+        }
+
+        fillForm({}, getChicagoTodayString());
+        setStatus(`Deleted ${formatPrettyDate(date)}.`);
+        await loadCalendarList();
+      } catch (error) {
+        console.error(error);
+        setStatus('Could not delete that day.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const dateInput = document.getElementById('eventDate');
+      const queryDate = new URLSearchParams(window.location.search).get('date');
+      const initialDate = queryDate || getChicagoTodayString();
+
+      fillForm({}, initialDate);
+      await loadCalendarList();
+      await loadCalendarEntry(initialDate);
+
+      dateInput.addEventListener('change', () => {
+        loadCalendarEntry(dateInput.value);
+      });
+
+      document.getElementById('newEntryBtn').addEventListener('click', () => {
+        const currentDate = dateInput.value || getChicagoTodayString();
+        fillForm({}, currentDate);
+        highlightSelected(currentDate);
+        setStatus('Cleared form for a fresh entry.');
+      });
+
+      document.getElementById('deleteEntryBtn').addEventListener('click', deleteCurrentEntry);
+    });
+  </script>
+</body>
+</html>
