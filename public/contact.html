@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact - After Teen Lounge</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="site-wrap">
+    <div class="site-shell">
+      <header class="site-nav">
+        <div class="brand">
+          <img src="/images/after.jpg" alt="After Teen Lounge logo" />
+          <div class="brand-text">
+            <div class="brand-title">After Teen Lounge</div>
+            <div class="brand-subtitle">Study · Play · Connect</div>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/events">Events</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="section-block section-dark">
+          <div class="section-header">
+            <h2 id="introHeading">Contact After Teen Lounge</h2>
+            <p class="muted" id="introText"></p>
+          </div>
+
+          <div class="two-col-grid">
+            
+
+            <!-- INFO -->
+            <div class="soft-panel">
+              <h3>Location</h3>
+              <p class="muted" id="addressLineOne"></p>
+              <p class="muted" id="addressLineTwo"></p>
+
+              <br>
+
+              <h3>Contact</h3>
+              <p class="muted" id="phone"></p>
+              <p class="muted" id="email"></p>
+
+              <br>
+
+              <h3>Follow Us</h3>
+              <p class="muted" id="facebook"></p>
+              <p class="muted" id="instagram"></p>
+              <p class="muted" id="x"></p>
+            </div>
+            <!-- IMAGE -->
+            <div class="soft-panel">
+              <img id="contactImage" src="" alt="Location" style="border-radius:20px;" />
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    async function loadContactData() {
+      try {
+        const res = await fetch('/api/public/contact');
+        if (!res.ok) throw new Error();
+        return await res.json();
+      } catch {
+        return {};
+      }
+    }
+
+    function set(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || '';
+    }
+
+    async function init() {
+      const data = await loadContactData();
+
+      set('introHeading', data.introHeading);
+      set('introText', data.introText);
+      set('addressLineOne', data.addressLineOne);
+      set('addressLineTwo', data.addressLineTwo);
+      set('phone', data.phone);
+      set('email', data.email);
+      set('facebook', data.facebook);
+      set('instagram', data.instagram);
+      set('x', data.x);
+
+      const img = document.getElementById('contactImage');
+      if (img && data.imagePath) {
+        img.src = data.imagePath;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

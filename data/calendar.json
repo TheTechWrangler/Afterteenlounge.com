@@ -14,5 +14,13 @@
     "featureItemOneText": "Study hall opens and staff check-in begins.",
     "featureItemTwoTime": "7:30 PM",
     "featureItemTwoText": "Game tournament sign-ups and group activities start."
+  },
+  {
+    "date": "2026-03-31",
+    "featureText": "Open gym, art table, gaming corner, and quiet study room.",
+    "featureItemOneTime": "4:00 PM",
+    "featureItemOneText": "Study hall opens and staff check-in begins.",
+    "featureItemTwoTime": "5:30 PM",
+    "featureItemTwoText": "Game tournament sign-ups and group activities start."
   }
 ]

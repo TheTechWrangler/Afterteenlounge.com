@@ -8,6 +8,7 @@ const router = express.Router();
 const dataDir = path.join(__dirname, '../data');
 const homepageDataPath = path.join(dataDir, 'homepage.json');
 const calendarDataPath = path.join(dataDir, '../data/calendar.json');
+const contactDataPath = path.join(dataDir, 'contact.json');
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
@@ -42,6 +43,10 @@ function readCalendarData() {
   return readJson(calendarDataPath, []);
 }
 
+function readContactData() {
+  return readJson(contactDataPath, {});
+}
+
 function getChicagoDateString() {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Chicago',
@@ -55,6 +60,35 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+router.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/contact.html'));
+});
+
+router.get('/api/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  res.json(readContactData());
+});
+
+router.post('/admin/contact/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  const contactData = {
+    introHeading: req.body.introHeading || '',
+    introText: req.body.introText || '',
+    imagePath: req.body.imagePath || '',
+    addressLineOne: req.body.addressLineOne || '',
+    addressLineTwo: req.body.addressLineTwo || '',
+    phone: req.body.phone || '',
+    email: req.body.email || '',
+    facebook: req.body.facebook || '',
+    instagram: req.body.instagram || '',
+    x: req.body.x || ''
+  };
+
+  writeJson(contactDataPath, contactData);
+  res.redirect('/admin/contact');
+});
+
+router.get('/admin/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin-contact.html'));
+});
 router.get('/admin', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
@@ -159,6 +193,10 @@ router.get('/api/public/calendar/today', (req, res) => {
     date: today,
     entry: entry || null
   });
+});
+
+router.get('/api/public/contact', (req, res) => {
+  res.json(readContactData());
 });
 
 router.get('/dashboard', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {

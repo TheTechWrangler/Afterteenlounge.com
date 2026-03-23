@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Contact</title>
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1>Contact Page Editor</h1>
+
+    <form id="contactForm" method="POST" action="/admin/contact/save">
+      
+      <h2>Intro</h2>
+      <input type="text" name="introHeading" placeholder="Heading" />
+      <textarea name="introText" placeholder="Intro text"></textarea>
+
+      <h2>Image</h2>
+      <input type="text" name="imagePath" placeholder="/images/front.png" />
+
+      <h2>Address</h2>
+      <input type="text" name="addressLineOne" placeholder="Address Line 1" />
+      <input type="text" name="addressLineTwo" placeholder="Address Line 2" />
+
+      <h2>Contact Info</h2>
+      <input type="text" name="phone" placeholder="Phone" />
+      <input type="text" name="email" placeholder="Email" />
+
+      <h2>Social</h2>
+      <input type="text" name="facebook" placeholder="Facebook link" />
+      <input type="text" name="instagram" placeholder="Instagram link" />
+      <input type="text" name="x" placeholder="X / Twitter link" />
+
+      <br><br>
+      <button type="submit">Save</button>
+    </form>
+  </div>
+
+  <script>
+    async function loadData() {
+      const res = await fetch('/api/contact');
+      const data = await res.json();
+
+      Object.keys(data).forEach(key => {
+        const el = document.querySelector(`[name="${key}"]`);
+        if (el) el.value = data[key];
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

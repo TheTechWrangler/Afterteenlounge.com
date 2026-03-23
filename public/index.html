@@ -21,7 +21,6 @@
         <nav class="nav-links">
           <a href="/">Home</a>
           <a href="/events">Events</a>
-          <a href="/programs">Programs</a>
           <a href="/contact">Contact</a>
         </nav>
       </header>
@@ -109,14 +108,11 @@
         </section>
 
         <section class="section-block section-darker">
-          <div class="section-header section-header-row">
-            <div>
-              <h2>What’s happening now</h2>
-              <p class="muted">
-                Quick links to the biggest things families and teens may want to check first.
-              </p>
-            </div>
-            <a class="btn btn-secondary" href="#">View All Updates</a>
+          <div class="section-header">
+            <h2>What’s happening now</h2>
+            <p class="muted">
+              Quick links to the biggest things families and teens may want to check first.
+            </p>
           </div>
 
           <div class="card-grid">
@@ -126,7 +122,6 @@
               <p class="muted">
                 Important updates, reminders, schedule changes, and current information.
               </p>
-              <a class="card-link" href="#">Read announcements</a>
             </article>
 
             <article class="highlight-card">
@@ -135,7 +130,6 @@
               <p class="muted">
                 See what is coming up this week, from games and movie nights to special events.
               </p>
-              <a class="card-link" href="#">Browse events</a>
             </article>
 
             <article class="highlight-card">
@@ -144,40 +138,13 @@
               <p class="muted">
                 Highlights, opportunities, and ways to stay connected with the lounge community.
               </p>
-              <a class="card-link" href="#">Explore more</a>
             </article>
           </div>
         </section>
 
-        <section class="section-block section-darker">
-          <div class="spotlight-shell">
-            <div class="spotlight-photo">
-              <span>Photo / Spotlight Area</span>
-            </div>
+      
 
-            <div class="spotlight-copy">
-              <h2>A homepage that feels alive.</h2>
-              <p class="muted">
-                This section can feature a room photo, spotlight story, promo graphic, or welcoming message that helps the site feel real and active.
-              </p>
-              <div>
-                <a class="btn btn-primary" href="#">Explore the Lounge</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="section-block section-darker footer-pad">
-          <div class="footer-cta-card">
-            <div>
-              <h2>Stay connected with the After Teen Lounge.</h2>
-              <p class="muted">
-                Check events, follow updates, and keep up with what’s happening in the space.
-              </p>
-            </div>
-            <a class="btn btn-primary" href="#">Get Started</a>
-          </div>
-        </section>
+       
       </main>
     </div>
   </div>
@@ -198,15 +165,12 @@
 
     function setText(id, value) {
       const el = document.getElementById(id);
-      if (el) {
-        el.textContent = value || '';
-      }
+      if (el) el.textContent = value || '';
     }
 
     function formatDisplayDate(dateString) {
       const [year, month, day] = dateString.split('-').map(Number);
       const localDate = new Date(year, month - 1, day);
-
       return localDate.toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'long',
@@ -217,12 +181,10 @@
     async function loadPublicHomepageData() {
       try {
         const response = await fetch('/api/public/homepage');
-        if (!response.ok) throw new Error('Failed to load homepage data');
-
+        if (!response.ok) throw new Error();
         const data = await response.json();
         return { ...homepageDefaults, ...data };
-      } catch (error) {
-        console.error('Error loading public homepage data:', error);
+      } catch {
         return { ...homepageDefaults };
       }
     }
@@ -230,11 +192,9 @@
     async function loadTodayCalendarData() {
       try {
         const response = await fetch('/api/public/calendar/today');
-        if (!response.ok) throw new Error('Failed to load today calendar data');
-
+        if (!response.ok) throw new Error();
         return await response.json();
-      } catch (error) {
-        console.error('Error loading today calendar data:', error);
+      } catch {
         return null;
       }
     }
