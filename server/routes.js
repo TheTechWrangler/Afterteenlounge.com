@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const bcrypt = require('bcrypt');
 const { requireRole } = require('./auth');
 const db = require('./db');
 
@@ -11,6 +12,10 @@ const dataDir = path.join(__dirname, '../data');
 const calendarDataPath = path.join(dataDir, 'calendar.json');
 const contactDataPath = path.join(dataDir, 'contact.json');
 const uploadsDir = path.join(__dirname, '../public/uploads');
+
+/* =======================
+   FILE / JSON HELPERS
+======================= */
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
@@ -56,7 +61,40 @@ function getChicagoDateString() {
   }).format(new Date());
 }
 
+function getHomepageSections(res) {
+  db.all(
+    `
+    SELECT ps.section_key, ps.content_json
+    FROM page_sections ps
+    JOIN pages p ON p.id = ps.page_id
+    WHERE p.slug = 'home'
+    ORDER BY ps.sort_order ASC
+    `,
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      const sections = {};
+
+      rows.forEach((row) => {
+        try {
+          sections[row.section_key] = JSON.parse(row.content_json || '{}');
+        } catch {
+          sections[row.section_key] = {};
+        }
+      });
+
+      return res.json(sections);
+    }
+  );
+}
+
 ensureUploadsDir();
+
+/* =======================
+   UPLOAD STORAGE
+======================= */
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -80,19 +118,19 @@ const upload = multer({ storage });
    PUBLIC PAGES
 ======================= */
 
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-router.get('/contact', (req, res) => {
+router.get('/contact', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/contact.html'));
 });
 
-router.get('/events', (req, res) => {
+router.get('/events', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/events.html'));
 });
 
-router.get('/gallery', (req, res) => {
+router.get('/gallery', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/gallery.html'));
 });
 
@@ -100,24 +138,28 @@ router.get('/gallery', (req, res) => {
    ADMIN PAGES
 ======================= */
 
-router.get('/admin', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+router.get('/admin', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
-router.get('/admin/homepage', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+router.get('/admin/homepage', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin-homepage.html'));
 });
 
-router.get('/admin/calendar', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+router.get('/admin/calendar', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin-calendar.html'));
 });
 
-router.get('/admin/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+router.get('/admin/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin-contact.html'));
 });
 
-router.get('/admin/gallery', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+router.get('/admin/gallery', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin-gallery.html'));
+});
+
+router.get('/admin/users', requireRole(['super_admin']), (_req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin-users.html'));
 });
 
 /* =======================
@@ -198,12 +240,8 @@ router.post('/admin/homepage/save', requireRole(['super_admin', 'admin', 'limite
       WHERE page_id = ? AND section_key = ?
     `);
 
-    updates.forEach(section => {
-      stmt.run(
-        JSON.stringify(section.content),
-        page.id,
-        section.key
-      );
+    updates.forEach((section) => {
+      stmt.run(JSON.stringify(section.content), page.id, section.key);
     });
 
     stmt.finalize((finalizeErr) => {
@@ -211,7 +249,7 @@ router.post('/admin/homepage/save', requireRole(['super_admin', 'admin', 'limite
         return res.status(500).send('Failed to save homepage');
       }
 
-      res.redirect('/admin/homepage');
+      return res.redirect('/admin/homepage');
     });
   });
 });
@@ -229,7 +267,7 @@ router.post('/admin/calendar/save', requireRole(['super_admin', 'admin', 'limite
     featureItemTwoText: req.body.featureItemTwoText || ''
   };
 
-  const index = calendar.findIndex(e => e.date === date);
+  const index = calendar.findIndex((e) => e.date === date);
 
   if (index >= 0) {
     calendar[index] = entry;
@@ -240,18 +278,18 @@ router.post('/admin/calendar/save', requireRole(['super_admin', 'admin', 'limite
   calendar.sort((a, b) => a.date.localeCompare(b.date));
   writeJson(calendarDataPath, calendar);
 
-  res.redirect(`/admin/calendar?date=${date}&saved=1`);
+  return res.redirect(`/admin/calendar?date=${date}&saved=1`);
 });
 
 router.post('/admin/calendar/delete', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const calendar = readCalendarData().filter(e => e.date !== req.body.eventDate);
+  const calendar = readCalendarData().filter((e) => e.date !== req.body.eventDate);
   writeJson(calendarDataPath, calendar);
-  res.json({ success: true });
+  return res.json({ success: true });
 });
 
 router.post('/admin/contact/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
   writeJson(contactDataPath, req.body);
-  res.redirect('/admin/contact');
+  return res.redirect('/admin/contact');
 });
 
 router.post(
@@ -280,98 +318,200 @@ router.post(
           return res.status(500).send('Failed to save gallery image');
         }
 
-        res.redirect('/admin/gallery');
+        return res.redirect('/admin/gallery');
       }
     );
   }
 );
 
-/* =======================
-   API ROUTES
-======================= */
-router.get('/api/admin/gallery', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
-  db.all(
-    `
-    SELECT id, title, description, file_path, alt_text, sort_order, is_visible, created_at
-    FROM gallery_images
-    ORDER BY sort_order ASC, id DESC
-    `,
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
+router.post('/admin/gallery/delete', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  const imageId = Number(req.body.imageId || 0);
+
+  if (!imageId) {
+    return res.status(400).send('Missing image id');
+  }
+
+  db.get(`SELECT file_path FROM gallery_images WHERE id = ?`, [imageId], (err, row) => {
+    if (err) {
+      return res.status(500).send('Failed to find image');
+    }
+
+    if (!row) {
+      return res.status(404).send('Image not found');
+    }
+
+    const fullPath = path.join(__dirname, '../public', row.file_path.replace(/^\//, ''));
+
+    db.run(`DELETE FROM gallery_images WHERE id = ?`, [imageId], (deleteErr) => {
+      if (deleteErr) {
+        return res.status(500).send('Failed to delete image record');
       }
 
-      res.json(rows);
+      fs.unlink(fullPath, () => {
+        return res.redirect('/admin/gallery');
+      });
+    });
+  });
+});
+
+router.post('/admin/gallery/toggle', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  const imageId = Number(req.body.imageId || 0);
+
+  if (!imageId) {
+    return res.status(400).send('Missing image id');
+  }
+
+  db.run(
+    `
+    UPDATE gallery_images
+    SET is_visible = CASE WHEN is_visible = 1 THEN 0 ELSE 1 END
+    WHERE id = ?
+    `,
+    [imageId],
+    (err) => {
+      if (err) {
+        return res.status(500).send('Failed to toggle image');
+      }
+
+      return res.redirect('/admin/gallery');
     }
   );
 });
 
-router.get('/api/public/homepage', (req, res) => {
-  db.all(`
-    SELECT ps.section_key, ps.content_json
-    FROM page_sections ps
-    JOIN pages p ON p.id = ps.page_id
-    WHERE p.slug = 'home'
-    ORDER BY ps.sort_order ASC
-  `, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+/* =======================
+   USER ADMIN API
+======================= */
 
-    const sections = {};
-
-    rows.forEach(row => {
-      try {
-        sections[row.section_key] = JSON.parse(row.content_json || '{}');
-      } catch {
-        sections[row.section_key] = {};
+router.get('/api/admin/users', requireRole(['super_admin']), (_req, res) => {
+  db.all(
+    `
+    SELECT id, username, role, is_active, created_at, updated_at
+    FROM users
+    ORDER BY username ASC
+    `,
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to load users.' });
       }
-    });
 
-    res.json(sections);
-  });
-});
-
-router.get('/api/homepage', (req, res) => {
-  db.all(`
-    SELECT ps.section_key, ps.content_json
-    FROM page_sections ps
-    JOIN pages p ON p.id = ps.page_id
-    WHERE p.slug = 'home'
-    ORDER BY ps.sort_order ASC
-  `, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+      return res.json(rows);
     }
+  );
+});
 
-    const sections = {};
+router.post('/api/admin/users', requireRole(['super_admin']), async (req, res) => {
+  const username = String(req.body.username || '').trim();
+  const password = String(req.body.password || '');
+  const role = String(req.body.role || '').trim();
 
-    rows.forEach(row => {
-      try {
-        sections[row.section_key] = JSON.parse(row.content_json || '{}');
-      } catch {
-        sections[row.section_key] = {};
+  const allowedRoles = ['super_admin', 'admin', 'limited_admin'];
+
+  if (!username || !password || !role) {
+    return res.status(400).json({ error: 'Username, password, and role are required.' });
+  }
+
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({ error: 'Invalid role selected.' });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    db.run(
+      `
+      INSERT INTO users (username, password_hash, role, is_active)
+      VALUES (?, ?, ?, 1)
+      `,
+      [username, passwordHash, role],
+      function (err) {
+        if (err) {
+          if (err.message && err.message.includes('UNIQUE')) {
+            return res.status(409).json({ error: 'Username already exists.' });
+          }
+
+          return res.status(500).json({ error: 'Failed to create user.' });
+        }
+
+        return res.json({
+          success: true,
+          user: {
+            id: this.lastID,
+            username,
+            role,
+            is_active: 1
+          }
+        });
       }
-    });
-
-    res.json(sections);
-  });
+    );
+  } catch {
+    return res.status(500).json({ error: 'Failed to create user.' });
+  }
 });
 
-router.get('/api/public/contact', (req, res) => {
-  res.json(readContactData());
+router.post('/api/admin/users/:id/toggle-active', requireRole(['super_admin']), (req, res) => {
+  const userId = Number(req.params.id);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+
+  if (req.session?.user?.id === userId) {
+    return res.status(400).json({ error: 'You cannot deactivate your own account.' });
+  }
+
+  db.run(
+    `
+    UPDATE users
+    SET
+      is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+    `,
+    [userId],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to update user status.' });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+
+      return res.json({ success: true });
+    }
+  );
 });
 
-router.get('/api/contact', (req, res) => {
-  res.json(readContactData());
+/* =======================
+   PUBLIC / SHARED API
+======================= */
+
+router.get('/api/public/homepage', (_req, res) => {
+  return getHomepageSections(res);
 });
 
-router.get('/api/public/calendar/today', (req, res) => {
+router.get('/api/homepage', (_req, res) => {
+  return getHomepageSections(res);
+});
+
+router.get('/api/public/contact', (_req, res) => {
+  return res.json(readContactData());
+});
+
+router.get('/api/contact', (_req, res) => {
+  return res.json(readContactData());
+});
+
+router.get('/api/public/calendar/today', (_req, res) => {
   const calendar = readCalendarData();
   const today = getChicagoDateString();
-  const entry = calendar.find(e => e.date === today);
+  const entry = calendar.find((e) => e.date === today);
 
-  res.json({ date: today, entry: entry || null });
+  return res.json({ date: today, entry: entry || null });
 });
 
 router.get('/api/calendar', (req, res) => {
@@ -379,11 +519,11 @@ router.get('/api/calendar', (req, res) => {
   const requestedDate = req.query.date;
 
   if (requestedDate) {
-    const entry = calendar.find(e => e.date === requestedDate);
+    const entry = calendar.find((e) => e.date === requestedDate);
     return res.json(entry || {});
   }
 
-  res.json(calendar);
+  return res.json(calendar);
 });
 
 router.get('/api/public/gallery', (_req, res) => {
@@ -399,114 +539,89 @@ router.get('/api/public/gallery', (_req, res) => {
         return res.status(500).json({ error: err.message });
       }
 
-      res.json(rows);
+      return res.json(rows);
     }
   );
 });
-router.post(
-  '/admin/gallery/delete',
-  requireRole(['super_admin', 'admin', 'limited_admin']),
-  (req, res) => {
-    const imageId = Number(req.body.imageId || 0);
 
-    if (!imageId) {
-      return res.status(400).send('Missing image id');
-    }
-
-    db.get(
-      `SELECT file_path FROM gallery_images WHERE id = ?`,
-      [imageId],
-      (err, row) => {
-        if (err) {
-          return res.status(500).send('Failed to find image');
-        }
-
-        if (!row) {
-          return res.status(404).send('Image not found');
-        }
-
-        const fullPath = path.join(__dirname, '../public', row.file_path.replace(/^\//, ''));
-
-        db.run(
-          `DELETE FROM gallery_images WHERE id = ?`,
-          [imageId],
-          (deleteErr) => {
-            if (deleteErr) {
-              return res.status(500).send('Failed to delete image record');
-            }
-
-            fs.unlink(fullPath, () => {
-              res.redirect('/admin/gallery');
-            });
-          }
-        );
+router.get('/api/admin/gallery', requireRole(['super_admin', 'admin', 'limited_admin']), (_req, res) => {
+  db.all(
+    `
+    SELECT id, title, description, file_path, alt_text, sort_order, is_visible, created_at
+    FROM gallery_images
+    ORDER BY sort_order ASC, id DESC
+    `,
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
       }
-    );
-  }
-);
 
-router.post(
-  '/admin/gallery/toggle',
-  requireRole(['super_admin', 'admin', 'limited_admin']),
-  (req, res) => {
-    const imageId = Number(req.body.imageId || 0);
-
-    if (!imageId) {
-      return res.status(400).send('Missing image id');
+      return res.json(rows);
     }
+  );
+});
 
-    db.run(
-      `
-      UPDATE gallery_images
-      SET is_visible = CASE WHEN is_visible = 1 THEN 0 ELSE 1 END
-      WHERE id = ?
-      `,
-      [imageId],
-      (err) => {
-        if (err) {
-          return res.status(500).send('Failed to toggle image');
-        }
-
-        res.redirect('/admin/gallery');
-      }
-    );
-  }
-);
-
-
-router.get('/api/debug/home-sections', (req, res) => {
-  db.all(`
+router.get('/api/debug/home-sections', (_req, res) => {
+  db.all(
+    `
     SELECT ps.id, ps.section_key, ps.section_label, ps.content_json, ps.sort_order
     FROM page_sections ps
     JOIN pages p ON p.id = ps.page_id
     WHERE p.slug = 'home'
     ORDER BY ps.sort_order ASC
-  `, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+    `,
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
 
-    res.json(rows);
-  });
+      return res.json(rows);
+    }
+  );
 });
 
 /* =======================
    AUTH
 ======================= */
 
-router.get('/login', (req, res) => {
+router.get('/login', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  if (username === 'admin' && password === 'admin123') {
-    req.session.user = { username: 'admin', role: 'admin' };
-    return res.redirect('/admin');
-  }
+  db.get(
+    `SELECT * FROM users WHERE username = ? AND is_active = 1`,
+    [username],
+    async (err, user) => {
+      if (err) {
+        return res.status(500).send('Server error');
+      }
 
-  res.status(401).send('Invalid login');
+      if (!user) {
+        return res.status(401).send('Invalid login');
+      }
+
+      try {
+        const match = await bcrypt.compare(password, user.password_hash);
+
+        if (!match) {
+          return res.status(401).send('Invalid login');
+        }
+
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        };
+
+        return res.redirect('/admin');
+      } catch {
+        return res.status(500).send('Server error');
+      }
+    }
+  );
 });
 
 router.get('/logout', (req, res) => {

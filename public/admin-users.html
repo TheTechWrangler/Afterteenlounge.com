@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Users - After Teen Lounge</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe3ee;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --danger: #b91c1c;
+      --success: #166534;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-block h1 {
+      margin: 0 0 6px;
+      font-size: 2rem;
+    }
+
+    .title-block p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn-secondary {
+      background: #e5eefc;
+      color: #1e3a8a;
+    }
+
+    .btn-secondary:hover {
+      background: #d8e7ff;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .btn-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .btn-success:hover {
+      background: #bbf7d0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 1.3rem;
+    }
+
+    .panel p.note {
+      margin-top: -4px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.18);
+      border-color: var(--accent);
+    }
+
+    .message {
+      min-height: 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .message.success {
+      color: var(--success);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .pill.active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .pill.inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 12px 0 4px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title-block">
+        <h1>User Management</h1>
+        <p>Manage admin accounts for the After Teen Lounge site.</p>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-secondary" href="/admin">Back to Admin</a>
+        <a class="btn btn-secondary" href="/logout">Log Out</a>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>Create New User</h2>
+      <p class="note">For now, this page is restricted to super admin only.</p>
+
+      <form id="createUserForm">
+        <div class="grid">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required />
+          </div>
+
+          <div class="field">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              <option value="admin">admin</option>
+              <option value="limited_admin">limited_admin</option>
+              <option value="super_admin">super_admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <button class="btn btn-primary" type="submit">Create User</button>
+        </div>
+
+        <div id="formMessage" class="message"></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Existing Users</h2>
+      <div id="usersMessage" class="message"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr>
+              <td colspan="7">Loading users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const usersTableBody = document.getElementById('usersTableBody');
+    const usersMessage = document.getElementById('usersMessage');
+    const formMessage = document.getElementById('formMessage');
+    const createUserForm = document.getElementById('createUserForm');
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+      const date = new Date(String(value).replace(' ', 'T'));
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString();
+    }
+
+    function renderUsers(users) {
+      if (!Array.isArray(users) || users.length === 0) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty">No users found.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      usersTableBody.innerHTML = users.map((user) => `
+        <tr>
+          <td>${escapeHtml(user.id)}</td>
+          <td>${escapeHtml(user.username)}</td>
+          <td><span class="pill">${escapeHtml(user.role)}</span></td>
+          <td>
+            <span class="pill ${user.is_active ? 'active' : 'inactive'}">
+              ${user.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td>${escapeHtml(formatDate(user.created_at))}</td>
+          <td>${escapeHtml(formatDate(user.updated_at))}</td>
+          <td>
+            <div class="row-actions">
+              <button
+                type="button"
+                class="btn ${user.is_active ? 'btn-danger' : 'btn-success'}"
+                onclick="toggleUserActive(${Number(user.id)})"
+              >
+                ${user.is_active ? 'Deactivate' : 'Reactivate'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadUsers() {
+      usersMessage.textContent = '';
+      usersMessage.className = 'message';
+
+      try {
+        const response = await fetch('/api/admin/users', {
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error((data && data.error) || 'Failed to load users.');
+        }
+
+        renderUsers(data);
+      } catch (error) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty">Could not load users.</td>
+          </tr>
+        `;
+        usersMessage.textContent = error.message || 'Could not load users.';
+        usersMessage.className = 'message error';
+      }
+    }
+
+    async function toggleUserActive(userId) {
+      usersMessage.textContent = '';
+      usersMessage.className = 'message';
+
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/toggle-active`, {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to update user status.');
+        }
+
+        usersMessage.textContent = 'User status updated.';
+        usersMessage.className = 'message success';
+
+        await loadUsers();
+      } catch (error) {
+        usersMessage.textContent = error.message || 'Failed to update user status.';
+        usersMessage.className = 'message error';
+      }
+    }
+
+    createUserForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      formMessage.textContent = '';
+      formMessage.className = 'message';
+
+      const payload = {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      };
+
+      try {
+        const response = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create user.');
+        }
+
+        formMessage.textContent = 'User created successfully.';
+        formMessage.className = 'message success';
+
+        createUserForm.reset();
+        document.getElementById('role').value = 'admin';
+
+        await loadUsers();
+      } catch (error) {
+        formMessage.textContent = error.message || 'Failed to create user.';
+        formMessage.className = 'message error';
+      }
+    });
+
+    loadUsers();
+  </script>
+</body>
+</html>
