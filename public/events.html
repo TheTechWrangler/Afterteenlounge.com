@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Events | After Teen Lounge</title>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <style>
+    .events-container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .day-card {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      min-height: 110px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .day-card:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .day-card.empty {
+      opacity: 0.4;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .day-name {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .day-date {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .day-preview {
+      font-size: 0.85rem;
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .month-day {
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      min-height: 80px;
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    .month-day.event {
+      cursor: pointer;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .month-day.empty {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .month-day.today {
+      outline: 2px solid #6bbcff;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: #6bbcff;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+    }
+
+    /* MODAL */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #111;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .close-btn {
+      margin-top: 15px;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="site-wrap">
+  <div class="site-shell">
+
+    <!-- ✅ TOP NAV (MATCHES INDEX) -->
+    <header class="site-nav">
+      <div class="brand">
+        <img src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="brand-text">
+          <div class="brand-title">After Teen Lounge</div>
+          <div class="brand-subtitle">Study · Play · Connect</div>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/events">Events</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </header>
+
+    <!-- CONTENT -->
+    <main>
+      <div class="events-container">
+        <h1 class="section-title">This Week</h1>
+        <div id="weekGrid" class="week-grid"></div>
+
+        <h1 class="section-title">This Month</h1>
+        <div id="monthGrid" class="month-grid"></div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalDate"></h3>
+    <p id="modalText"></p>
+
+    <div style="margin-top:10px;">
+      <strong id="modalTime1"></strong>
+      <p id="modalText1"></p>
+    </div>
+
+    <div style="margin-top:10px;">
+      <strong id="modalTime2"></strong>
+      <p id="modalText2"></p>
+    </div>
+
+    <div class="close-btn" onclick="closeModal()">Close</div>
+  </div>
+</div>
+
+<script>
+let calendarData = [];
+
+function getTodayString() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function fetchCalendar() {
+  return fetch('/api/calendar')
+    .then(res => res.json())
+    .catch(() => []);
+}
+
+function findEvent(date) {
+  return calendarData.find(e => e.date === date);
+}
+
+function buildWeek() {
+  const grid = document.getElementById('weekGrid');
+  grid.innerHTML = '';
+
+  const today = new Date();
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(today.getDate() - today.getDay() + i);
+
+    const dateStr = d.toISOString().split('T')[0];
+    const event = findEvent(dateStr);
+
+    const div = document.createElement('div');
+    div.className = 'day-card';
+
+    if (!event) div.classList.add('empty');
+
+    div.innerHTML = `
+      <div class="day-name">${d.toLocaleDateString('en-US',{weekday:'short'})}</div>
+      <div class="day-date">${d.getDate()}</div>
+      <div class="day-preview">
+        ${event ? event.featureText.slice(0,40) : 'No events'}
+      </div>
+    `;
+
+    if (event) div.onclick = () => openModal(event);
+
+    grid.appendChild(div);
+  }
+}
+
+function buildMonth() {
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement('div');
+    grid.appendChild(blank);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(year, month, day);
+    const dateStr = d.toISOString().split('T')[0];
+    const event = findEvent(dateStr);
+
+    const div = document.createElement('div');
+    div.className = 'month-day';
+
+    if (!event) div.classList.add('empty');
+    else div.classList.add('event');
+
+    if (dateStr === getTodayString()) {
+      div.classList.add('today');
+    }
+
+    div.innerHTML = `
+      ${day}
+      ${event ? '<div class="dot"></div>' : ''}
+    `;
+
+    if (event) div.onclick = () => openModal(event);
+
+    grid.appendChild(div);
+  }
+}
+
+function openModal(event) {
+  document.getElementById('modalDate').innerText = event.date;
+  document.getElementById('modalText').innerText = event.featureText;
+
+  document.getElementById('modalTime1').innerText = event.featureItemOneTime;
+  document.getElementById('modalText1').innerText = event.featureItemOneText;
+
+  document.getElementById('modalTime2').innerText = event.featureItemTwoTime;
+  document.getElementById('modalText2').innerText = event.featureItemTwoText;
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+async function init() {
+  calendarData = await fetchCalendar();
+  buildWeek();
+  buildMonth();
+}
+
+init();
+</script>
+
+</body>
+</html>

@@ -1,12 +1,12 @@
 {
-  "heroHeading": "test",
-  "heroText": "test",
+  "heroHeading": "A safe place to land, grow, and belong.",
+  "heroText": "After Teen Lounge provides a structured, welcoming space where teens can focus on homework, connect with others, and take part in positive activities after school.",
   "primaryButtonText": "See Events",
   "secondaryButtonText": "Learn More",
   "featureTitle": "Tonight at the Lounge",
-  "featureText": "test",
+  "featureText": "Open gym, creative space, games, and a quiet study area are available throughout the evening.",
   "featureItemOneTime": "4:00 PM",
-  "featureItemOneText": "Study hall opens and staff check-in begins.",
+  "featureItemOneText": "Doors open, check-in begins, and study hall is available.",
   "featureItemTwoTime": "5:30 PM",
-  "featureItemTwoText": "Game tournament sign-ups and group activities start."
+  "featureItemTwoText": "Group activities, games, and community time kick off."
 }

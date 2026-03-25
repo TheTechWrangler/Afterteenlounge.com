@@ -2,120 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>After Teen Lounge Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin</title>
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body>
-  <div class="admin-shell">
-    <aside class="sidebar">
-      <div class="brand-block">
-        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
-        <div class="brand-text">
-          <h1>After Admin</h1>
-          <p>Study · Play · Connect</p>
-        </div>
-      </div>
 
-      <nav class="sidebar-nav">
-        <a class="nav-link active" href="/admin">Dashboard</a>
-        <a class="nav-link" href="/admin/homepage">Homepage</a>
-        <a class="nav-link" href="/dashboard">Announcements</a>
-        <a class="nav-link" href="/admin/calendar">Calendar</a>
-        <a class="nav-link" href="#">Engagement</a>
-        <a class="nav-link" href="#">Media</a>
-        <a class="nav-link" href="#">Access</a>
-      </nav>
+  <div class="admin-wrap">
 
-      <div class="sidebar-footer">
-        <strong>Build Status</strong>
-        <p>Homepage manager is live, and calendar control now feeds the Tonight at the Lounge panel.</p>
-      </div>
-    </aside>
+    <h1>After Teen Lounge Admin</h1>
+    <p class="muted">Simple controls. No clutter.</p>
 
-    <main class="main-content">
-      <header class="topbar">
-        <div>
-          <h2>Admin Dashboard</h2>
-          <p>Manage homepage highlights, events, updates, and section content from one place.</p>
-        </div>
-        <div class="status-pill">Logged In</div>
-      </header>
+    <div style="margin:20px 0;">
+      <a class="btn btn-primary" href="/admin/homepage">Homepage</a>
+      <a class="btn btn-primary" href="/admin/calendar">Calendar</a>
+      <a class="btn btn-primary" href="/admin/contact">Contact</a>
+      <a class="btn btn-secondary" href="/logout">Logout</a>
+    </div>
 
-      <section class="hero-anchor hero-anchor-admin">
-        <div class="hero-logo-box">
-          <img src="/images/after.jpg" alt="After Teen Lounge logo" />
-          <div class="hero-logo-caption">Study · Play · Connect</div>
-        </div>
+    <div class="soft-panel">
+      <h3>Quick Notes</h3>
+      <p class="muted">
+        Each section edits the live site directly. Keep it simple.
+      </p>
+    </div>
 
-        <div class="hero-copy">
-          <h1>Control the site from one clean dashboard.</h1>
-          <p>
-            This is the main admin space for the After Teen Lounge website. As each module is built here,
-            it will directly power the public-facing pages.
-          </p>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="/admin/homepage">Open Homepage Manager</a>
-            <a class="btn btn-secondary" href="/admin/calendar">Open Calendar Manager</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="stats-grid">
-        <article class="stat-card">
-          <span class="stat-label">Homepage</span>
-          <strong class="stat-value">Ready</strong>
-          <p>Public homepage design is moving into editable structure.</p>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Login Flow</span>
-          <strong class="stat-value">Live</strong>
-          <p>Session-based login is protecting the admin area.</p>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Current Focus</span>
-          <strong class="stat-value">Calendar</strong>
-          <p>Daily schedule now feeds the homepage Tonight panel by date.</p>
-        </article>
-      </section>
-
-      <section class="modules-grid">
-        <article class="module-card">
-          <h3>Homepage Manager</h3>
-          <p>Edit the hero, feature panel defaults, highlights, spotlight, and footer CTA.</p>
-          <div class="module-actions">
-            <a class="btn btn-primary" href="/admin/homepage">Edit Homepage</a>
-          </div>
-        </article>
-
-        <article class="module-card">
-          <h3>Calendar Manager</h3>
-          <p>Manage the dated schedule that appears under Tonight at the Lounge.</p>
-          <div class="module-actions">
-            <a class="btn btn-primary" href="/admin/calendar">Edit Calendar</a>
-          </div>
-        </article>
-
-        <article class="module-card">
-          <h3>Announcements</h3>
-          <p>Manage news, notices, and updates that will appear on the site.</p>
-          <div class="module-actions">
-            <a class="btn btn-secondary" href="/dashboard">Open Section</a>
-          </div>
-        </article>
-
-        <article class="module-card">
-          <h3>Engagement</h3>
-          <p>Control featured promos, highlights, and future involvement blocks.</p>
-          <div class="module-actions">
-            <a class="btn btn-secondary" href="#">Coming Soon</a>
-          </div>
-        </article>
-      </section>
-    </main>
   </div>
+
 </body>
 </html>

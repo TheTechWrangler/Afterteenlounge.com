@@ -31,28 +31,10 @@
           <div class="hero-blob hero-blob-2"></div>
           <div class="hero-blob hero-blob-3"></div>
 
+          <!-- TOP GRID (logo + tonight card) -->
           <div class="hero-grid">
-            <div class="hero-copy">
-              <div class="hero-logo-anchor">
-                <img src="/images/after.jpg" alt="After Teen Lounge logo" />
-              </div>
-
-              <h1 id="heroHeading">A bright, safe place to land after school.</h1>
-
-              <p class="hero-text muted" id="heroText">
-                Homework help, creative space, games, events, and a welcoming environment where teens can connect, recharge, and grow.
-              </p>
-
-              <div class="hero-actions">
-                <a class="btn btn-primary" href="#" id="primaryButtonText">See Events</a>
-                <a class="btn btn-secondary" href="#" id="secondaryButtonText">Learn More</a>
-              </div>
-
-              <div class="pill-row">
-                <div class="pill">Homework Help</div>
-                <div class="pill">Games</div>
-                <div class="pill">Creative Space</div>
-              </div>
+            <div class="hero-logo-anchor">
+              <img src="/images/after.jpg" alt="After Teen Lounge logo" />
             </div>
 
             <aside class="feature-bubble">
@@ -73,10 +55,19 @@
               <div class="mini-card">
                 <strong id="featureItemTwoTime">5:30 PM</strong>
                 <p class="muted" id="featureItemTwoText">
-                  Game tournament sign-ups and group activities start.
+                  Group activities, games, and community time kick off.
                 </p>
               </div>
             </aside>
+          </div>
+
+          <!-- 🔥 FIXED HERO TEXT (FULL WIDTH) -->
+          <div class="hero-text-block">
+            <h1 id="heroHeading">A place to grow, connect, and belong.</h1>
+            <p class="hero-text muted" id="heroText">
+              A structured, welcoming space where teens can focus, build friendships,
+              and take part in positive after-school activities.
+            </p>
           </div>
         </section>
 
@@ -141,18 +132,14 @@
             </article>
           </div>
         </section>
-
-      
-
-       
       </main>
     </div>
   </div>
 
   <script>
     const homepageDefaults = {
-      heroHeading: 'A bright, safe place to land after school.',
-      heroText: 'Homework help, creative space, games, events, and a welcoming environment where teens can connect, recharge, and grow.',
+      heroHeading: 'A place to grow, connect, and belong.',
+      heroText: 'A structured, welcoming space where teens can focus, build friendships, and take part in positive after-school activities.',
       primaryButtonText: 'See Events',
       secondaryButtonText: 'Learn More',
       featureTitle: 'Tonight at the Lounge',
@@ -160,7 +147,7 @@
       featureItemOneTime: '4:00 PM',
       featureItemOneText: 'Study hall opens and staff check-in begins.',
       featureItemTwoTime: '5:30 PM',
-      featureItemTwoText: 'Game tournament sign-ups and group activities start.'
+      featureItemTwoText: 'Group activities, games, and community time kick off.'
     };
 
     function setText(id, value) {
@@ -205,8 +192,6 @@
 
       setText('heroHeading', homepage.heroHeading);
       setText('heroText', homepage.heroText);
-      setText('primaryButtonText', homepage.primaryButtonText);
-      setText('secondaryButtonText', homepage.secondaryButtonText);
       setText('featureTitle', homepage.featureTitle);
 
       if (todayCalendar && todayCalendar.date) {

@@ -3,194 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>After Teen Lounge - Homepage Manager</title>
+  <title>Homepage Editor</title>
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body>
-  <div class="admin-shell">
-    <aside class="sidebar">
-      <div class="brand-block">
-        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
-        <div class="brand-text">
-          <h1>After Admin</h1>
-          <p>Homepage Manager</p>
-        </div>
-      </div>
 
-      <nav class="sidebar-nav">
-        <a class="nav-link" href="/admin">Dashboard</a>
-        <a class="nav-link active" href="/admin/homepage">Homepage</a>
-        <a class="nav-link" href="/dashboard">Announcements</a>
-        <a class="nav-link" href="/calendar">Events</a>
-        <a class="nav-link" href="/logout">Logout</a>
-      </nav>
+  <div class="admin-wrap">
 
-      <div class="sidebar-footer">
-        <strong>Current Focus</strong>
-        <p>Edit homepage content here. This form now loads saved homepage data from the JSON file.</p>
-      </div>
-    </aside>
+    <h1>Homepage Editor</h1>
 
-    <main class="main-content">
-      <header class="topbar">
-        <div>
-          <h2>Homepage Manager</h2>
-          <p>Edit the homepage hero and feature panel content from one place.</p>
-        </div>
-        <div class="status-pill">Editor</div>
-      </header>
+    <div style="margin-bottom:20px;">
+      <a class="btn btn-secondary" href="/admin">← Back</a>
+    </div>
 
-      <section class="module-card">
-        <h3>Homepage Content</h3>
-        <p>These fields control the first editable homepage sections.</p>
+    <form method="POST" action="/admin/homepage/save">
 
-        <form class="login-form" method="POST" action="/admin/homepage/save" id="homepageForm">
-          <div class="form-group">
-            <label for="heroHeading">Hero Heading</label>
-            <input
-              id="heroHeading"
-              name="heroHeading"
-              type="text"
-              value="A bright, safe place to land after school."
-              required
-            />
-          </div>
+      <h2>Hero</h2>
 
-          <div class="form-group">
-            <label for="heroText">Hero Text</label>
-            <input
-              id="heroText"
-              name="heroText"
-              type="text"
-              value="Homework help, creative space, games, events, and a welcoming environment where teens can connect, recharge, and grow."
-              required
-            />
-          </div>
+      <input name="heroHeading" placeholder="Hero Heading" />
+      <input name="heroText" placeholder="Hero Text" />
 
-          <div class="form-group">
-            <label for="primaryButtonText">Primary Button Text</label>
-            <input
-              id="primaryButtonText"
-              name="primaryButtonText"
-              type="text"
-              value="See Events"
-            />
-          </div>
+      <h2>Buttons</h2>
 
-          <div class="form-group">
-            <label for="secondaryButtonText">Secondary Button Text</label>
-            <input
-              id="secondaryButtonText"
-              name="secondaryButtonText"
-              type="text"
-              value="Learn More"
-            />
-          </div>
+      <input name="primaryButtonText" placeholder="Primary Button Text" />
+      <input name="secondaryButtonText" placeholder="Secondary Button Text" />
 
-          <div class="form-group">
-            <label for="featureTitle">Feature Panel Title</label>
-            <input
-              id="featureTitle"
-              name="featureTitle"
-              type="text"
-              value="Tonight at the Lounge"
-              required
-            />
-          </div>
+      <h2>Feature Panel</h2>
 
-          <div class="form-group">
-            <label for="featureText">Feature Panel Text</label>
-            <input
-              id="featureText"
-              name="featureText"
-              type="text"
-              value="Open gym, art table, gaming corner, and quiet study room."
-              required
-            />
-          </div>
+      <input name="featureTitle" placeholder="Feature Title" />
+      <input name="featureText" placeholder="Feature Text" />
 
-          <div class="form-group">
-            <label for="featureItemOneTime">Feature Item One Time</label>
-            <input
-              id="featureItemOneTime"
-              name="featureItemOneTime"
-              type="text"
-              value="4:00 PM"
-            />
-          </div>
+      <input name="featureItemOneTime" placeholder="Item One Time" />
+      <input name="featureItemOneText" placeholder="Item One Text" />
 
-          <div class="form-group">
-            <label for="featureItemOneText">Feature Item One Text</label>
-            <input
-              id="featureItemOneText"
-              name="featureItemOneText"
-              type="text"
-              value="Study hall opens and staff check-in begins."
-            />
-          </div>
+      <input name="featureItemTwoTime" placeholder="Item Two Time" />
+      <input name="featureItemTwoText" placeholder="Item Two Text" />
 
-          <div class="form-group">
-            <label for="featureItemTwoTime">Feature Item Two Time</label>
-            <input
-              id="featureItemTwoTime"
-              name="featureItemTwoTime"
-              type="text"
-              value="5:30 PM"
-            />
-          </div>
+      <br><br>
+      <button class="btn btn-primary" type="submit">Save</button>
 
-          <div class="form-group">
-            <label for="featureItemTwoText">Feature Item Two Text</label>
-            <input
-              id="featureItemTwoText"
-              name="featureItemTwoText"
-              type="text"
-              value="Game tournament sign-ups and group activities start."
-            />
-          </div>
+    </form>
 
-          <button class="btn btn-primary login-submit" type="submit">Save Homepage</button>
-        </form>
-      </section>
-    </main>
   </div>
 
   <script>
     async function loadHomepageData() {
-      try {
-        const response = await fetch('/api/homepage');
+      const res = await fetch('/api/homepage');
+      const data = await res.json();
 
-        if (!response.ok) {
-          throw new Error('Failed to load homepage data');
-        }
-
-        const data = await response.json();
-
-        const fields = [
-          'heroHeading',
-          'heroText',
-          'primaryButtonText',
-          'secondaryButtonText',
-          'featureTitle',
-          'featureText',
-          'featureItemOneTime',
-          'featureItemOneText',
-          'featureItemTwoTime',
-          'featureItemTwoText'
-        ];
-
-        fields.forEach((field) => {
-          const input = document.getElementById(field);
-          if (input && typeof data[field] === 'string') {
-            input.value = data[field];
-          }
-        });
-      } catch (error) {
-        console.error('Error loading homepage data:', error);
-      }
+      Object.keys(data).forEach(key => {
+        const el = document.querySelector(`[name="${key}"]`);
+        if (el) el.value = data[key];
+      });
     }
 
-    document.addEventListener('DOMContentLoaded', loadHomepageData);
+    loadHomepageData();
   </script>
+
 </body>
 </html>

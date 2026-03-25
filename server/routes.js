@@ -7,7 +7,7 @@ const router = express.Router();
 
 const dataDir = path.join(__dirname, '../data');
 const homepageDataPath = path.join(dataDir, 'homepage.json');
-const calendarDataPath = path.join(dataDir, '../data/calendar.json');
+const calendarDataPath = path.join(dataDir, 'calendar.json');
 const contactDataPath = path.join(dataDir, 'contact.json');
 
 function ensureDataDir() {
@@ -18,14 +18,10 @@ function ensureDataDir() {
 
 function readJson(filePath, fallback) {
   try {
-    if (!fs.existsSync(filePath)) {
-      return fallback;
-    }
-
-    const rawData = fs.readFileSync(filePath, 'utf8');
-    return rawData ? JSON.parse(rawData) : fallback;
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
+    if (!fs.existsSync(filePath)) return fallback;
+    const raw = fs.readFileSync(filePath, 'utf8');
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
     return fallback;
   }
 }
@@ -56,6 +52,10 @@ function getChicagoDateString() {
   }).format(new Date());
 }
 
+/* =======================
+   PUBLIC PAGES
+======================= */
+
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
@@ -64,31 +64,15 @@ router.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/contact.html'));
 });
 
-router.get('/api/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  res.json(readContactData());
+// 🔥 THIS WAS MISSING
+router.get('/events', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/events.html'));
 });
 
-router.post('/admin/contact/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const contactData = {
-    introHeading: req.body.introHeading || '',
-    introText: req.body.introText || '',
-    imagePath: req.body.imagePath || '',
-    addressLineOne: req.body.addressLineOne || '',
-    addressLineTwo: req.body.addressLineTwo || '',
-    phone: req.body.phone || '',
-    email: req.body.email || '',
-    facebook: req.body.facebook || '',
-    instagram: req.body.instagram || '',
-    x: req.body.x || ''
-  };
+/* =======================
+   ADMIN PAGES
+======================= */
 
-  writeJson(contactDataPath, contactData);
-  res.redirect('/admin/contact');
-});
-
-router.get('/admin/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/admin-contact.html'));
-});
 router.get('/admin', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
@@ -101,111 +85,82 @@ router.get('/admin/calendar', requireRole(['super_admin', 'admin', 'limited_admi
   res.sendFile(path.join(__dirname, '../public/admin-calendar.html'));
 });
 
-router.post('/admin/homepage/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const homepageData = {
-    heroHeading: req.body.heroHeading || '',
-    heroText: req.body.heroText || '',
-    primaryButtonText: req.body.primaryButtonText || '',
-    secondaryButtonText: req.body.secondaryButtonText || '',
-    featureTitle: req.body.featureTitle || '',
-    featureText: req.body.featureText || '',
-    featureItemOneTime: req.body.featureItemOneTime || '',
-    featureItemOneText: req.body.featureItemOneText || '',
-    featureItemTwoTime: req.body.featureItemTwoTime || '',
-    featureItemTwoText: req.body.featureItemTwoText || ''
-  };
+router.get('/admin/contact', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin-contact.html'));
+});
 
-  writeJson(homepageDataPath, homepageData);
+/* =======================
+   SAVE ROUTES
+======================= */
+
+router.post('/admin/homepage/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  writeJson(homepageDataPath, req.body);
   res.redirect('/admin/homepage');
 });
 
 router.post('/admin/calendar/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const eventDate = req.body.eventDate || '';
-  const calendarData = readCalendarData();
-
-  if (!eventDate) {
-    return res.status(400).send('Event date is required');
-  }
+  const calendar = readCalendarData();
+  const date = req.body.eventDate;
 
   const entry = {
-    date: eventDate,
-    featureText: req.body.featureText || '',
-    featureItemOneTime: req.body.featureItemOneTime || '',
-    featureItemOneText: req.body.featureItemOneText || '',
-    featureItemTwoTime: req.body.featureItemTwoTime || '',
-    featureItemTwoText: req.body.featureItemTwoText || ''
+    date,
+    featureText: req.body.featureText,
+    featureItemOneTime: req.body.featureItemOneTime,
+    featureItemOneText: req.body.featureItemOneText,
+    featureItemTwoTime: req.body.featureItemTwoTime,
+    featureItemTwoText: req.body.featureItemTwoText
   };
 
-  const existingIndex = calendarData.findIndex((item) => item.date === eventDate);
+  const index = calendar.findIndex(e => e.date === date);
 
-  if (existingIndex >= 0) {
-    calendarData[existingIndex] = entry;
-  } else {
-    calendarData.push(entry);
-  }
+  if (index >= 0) calendar[index] = entry;
+  else calendar.push(entry);
 
-  calendarData.sort((a, b) => a.date.localeCompare(b.date));
-  writeJson(calendarDataPath, calendarData);
+  calendar.sort((a, b) => a.date.localeCompare(b.date));
 
-  res.redirect(`/admin/calendar?date=${encodeURIComponent(eventDate)}&saved=1`);
+  writeJson(calendarDataPath, calendar);
+  res.redirect(`/admin/calendar?date=${date}&saved=1`);
 });
 
 router.post('/admin/calendar/delete', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const eventDate = req.body.eventDate || '';
-  const calendarData = readCalendarData();
-
-  if (!eventDate) {
-    return res.status(400).json({ error: 'Event date is required' });
-  }
-
-  const filtered = calendarData.filter((item) => item.date !== eventDate);
-  writeJson(calendarDataPath, filtered);
-
-  return res.json({ success: true });
+  const calendar = readCalendarData().filter(e => e.date !== req.body.eventDate);
+  writeJson(calendarDataPath, calendar);
+  res.json({ success: true });
 });
 
-router.get('/api/homepage', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  res.json(readHomepageData());
+router.post('/admin/contact/save', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
+  writeJson(contactDataPath, req.body);
+  res.redirect('/admin/contact');
 });
+
+/* =======================
+   API ROUTES
+======================= */
 
 router.get('/api/public/homepage', (req, res) => {
   res.json(readHomepageData());
-});
-
-router.get('/api/calendar', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  const calendarData = readCalendarData();
-  const date = req.query.date;
-
-  if (date) {
-    const entry = calendarData.find((item) => item.date === date);
-    return res.json(entry || {});
-  }
-
-  res.json(calendarData);
-});
-
-router.get('/api/public/calendar/today', (req, res) => {
-  const calendarData = readCalendarData();
-  const today = getChicagoDateString();
-  const entry = calendarData.find((item) => item.date === today);
-
-  res.json({
-    date: today,
-    entry: entry || null
-  });
 });
 
 router.get('/api/public/contact', (req, res) => {
   res.json(readContactData());
 });
 
-router.get('/dashboard', requireRole(['super_admin', 'admin', 'limited_admin']), (req, res) => {
-  res.send(`Dashboard placeholder (${req.user.role})`);
+router.get('/api/public/calendar/today', (req, res) => {
+  const calendar = readCalendarData();
+  const today = getChicagoDateString();
+  const entry = calendar.find(e => e.date === today);
+
+  res.json({ date: today, entry: entry || null });
 });
 
-router.get('/users', requireRole(['super_admin']), (req, res) => {
-  res.send(`Users placeholder (${req.user.role})`);
+// 🔥 THIS feeds your events page
+router.get('/api/calendar', (req, res) => {
+  res.json(readCalendarData());
 });
+
+/* =======================
+   AUTH
+======================= */
 
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/login.html'));
@@ -215,20 +170,15 @@ router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   if (username === 'admin' && password === 'admin123') {
-    req.session.user = {
-      username: 'admin',
-      role: 'admin'
-    };
+    req.session.user = { username: 'admin', role: 'admin' };
     return res.redirect('/admin');
   }
 
-  return res.status(401).send('Invalid username or password');
+  res.status(401).send('Invalid login');
 });
 
 router.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login');
-  });
+  req.session.destroy(() => res.redirect('/login'));
 });
 
 module.exports = router;
