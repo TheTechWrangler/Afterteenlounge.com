@@ -18,11 +18,12 @@
           </div>
         </div>
 
-        <nav class="nav-links">
-          <a href="/">Home</a>
-          <a href="/events">Events</a>
-          <a href="/contact">Contact</a>
-        </nav>
+       <nav class="nav-links">
+  <a href="/">Home</a>
+  <a href="/events">Events</a>
+  <a href="/gallery">Gallery</a>
+  <a href="/contact">Contact</a>
+</nav>
       </header>
 
       <main>
@@ -31,7 +32,6 @@
           <div class="hero-blob hero-blob-2"></div>
           <div class="hero-blob hero-blob-3"></div>
 
-          <!-- TOP GRID (logo + tonight card) -->
           <div class="hero-grid">
             <div class="hero-logo-anchor">
               <img src="/images/after.jpg" alt="After Teen Lounge logo" />
@@ -61,7 +61,6 @@
             </aside>
           </div>
 
-          <!-- 🔥 FIXED HERO TEXT (FULL WIDTH) -->
           <div class="hero-text-block">
             <h1 id="heroHeading">A place to grow, connect, and belong.</h1>
             <p class="hero-text muted" id="heroText">
@@ -75,23 +74,23 @@
 
         <section class="section-block section-dark">
           <div class="section-header">
-            <h2>More than just a place to go after school.</h2>
-            <p class="muted">
+            <h2 id="introHeading">More than just a place to go after school.</h2>
+            <p class="muted" id="introText">
               The After Teen Lounge is built to feel supportive, safe, and fun — with structure for families and flexibility for teens.
             </p>
           </div>
 
           <div class="two-col-grid">
             <div class="soft-panel">
-              <h3>What We Offer</h3>
-              <p class="muted">
+              <h3 id="offerTitle">What We Offer</h3>
+              <p class="muted" id="offerText">
                 Homework support, fun activities, quiet space, and room to build positive connections.
               </p>
             </div>
 
             <div class="soft-panel">
-              <h3>Community Spotlight</h3>
-              <p class="muted">
+              <h3 id="spotlightTitle">Community Spotlight</h3>
+              <p class="muted" id="spotlightText">
                 Featured activities, photos, events, or important updates can live here as the site grows.
               </p>
             </div>
@@ -100,33 +99,33 @@
 
         <section class="section-block section-darker">
           <div class="section-header">
-            <h2>What’s happening now</h2>
-            <p class="muted">
+            <h2 id="highlightsHeading">What’s happening now</h2>
+            <p class="muted" id="highlightsText">
               Quick links to the biggest things families and teens may want to check first.
             </p>
           </div>
 
           <div class="card-grid">
             <article class="highlight-card">
-              <div class="card-tag">Announcements</div>
-              <h3>Latest News</h3>
-              <p class="muted">
+              <div class="card-tag" id="announcementsTag">Announcements</div>
+              <h3 id="announcementsTitle">Latest News</h3>
+              <p class="muted" id="announcementsText">
                 Important updates, reminders, schedule changes, and current information.
               </p>
             </article>
 
             <article class="highlight-card">
-              <div class="card-tag">Events</div>
-              <h3>Upcoming Activities</h3>
-              <p class="muted">
+              <div class="card-tag" id="eventsTag">Events</div>
+              <h3 id="eventsTitle">Upcoming Activities</h3>
+              <p class="muted" id="eventsText">
                 See what is coming up this week, from games and movie nights to special events.
               </p>
             </article>
 
             <article class="highlight-card">
-              <div class="card-tag">Engagement</div>
-              <h3>Get Involved</h3>
-              <p class="muted">
+              <div class="card-tag" id="engagementTag">Engagement</div>
+              <h3 id="engagementTitle">Get Involved</h3>
+              <p class="muted" id="engagementText">
                 Highlights, opportunities, and ways to stay connected with the lounge community.
               </p>
             </article>
@@ -137,27 +136,17 @@
   </div>
 
   <script>
-    const homepageDefaults = {
-      heroHeading: 'A place to grow, connect, and belong.',
-      heroText: 'A structured, welcoming space where teens can focus, build friendships, and take part in positive after-school activities.',
-      primaryButtonText: 'See Events',
-      secondaryButtonText: 'Learn More',
-      featureTitle: 'Tonight at the Lounge',
-      featureText: 'Open gym, art table, gaming corner, and quiet study room.',
-      featureItemOneTime: '4:00 PM',
-      featureItemOneText: 'Study hall opens and staff check-in begins.',
-      featureItemTwoTime: '5:30 PM',
-      featureItemTwoText: 'Group activities, games, and community time kick off.'
-    };
-
     function setText(id, value) {
       const el = document.getElementById(id);
-      if (el) el.textContent = value || '';
+      if (el && typeof value !== 'undefined' && value !== null) {
+        el.textContent = value;
+      }
     }
 
     function formatDisplayDate(dateString) {
       const [year, month, day] = dateString.split('-').map(Number);
       const localDate = new Date(year, month - 1, day);
+
       return localDate.toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'long',
@@ -168,20 +157,21 @@
     async function loadPublicHomepageData() {
       try {
         const response = await fetch('/api/public/homepage');
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        return { ...homepageDefaults, ...data };
-      } catch {
-        return { ...homepageDefaults };
+        if (!response.ok) throw new Error('Failed to load homepage data');
+        return await response.json();
+      } catch (error) {
+        console.error('Homepage load failed:', error);
+        return {};
       }
     }
 
     async function loadTodayCalendarData() {
       try {
         const response = await fetch('/api/public/calendar/today');
-        if (!response.ok) throw new Error();
+        if (!response.ok) throw new Error('Failed to load today calendar');
         return await response.json();
-      } catch {
+      } catch (error) {
+        console.error('Calendar load failed:', error);
         return null;
       }
     }
@@ -190,27 +180,46 @@
       const homepage = await loadPublicHomepageData();
       const todayCalendar = await loadTodayCalendarData();
 
-      setText('heroHeading', homepage.heroHeading);
-      setText('heroText', homepage.heroText);
-      setText('featureTitle', homepage.featureTitle);
+      setText('heroHeading', homepage.hero?.heroHeading);
+      setText('heroText', homepage.hero?.heroText);
+
+      setText('featureTitle', homepage.tonight?.featureTitle);
 
       if (todayCalendar && todayCalendar.date) {
         setText('featureDate', formatDisplayDate(todayCalendar.date));
       }
 
       if (todayCalendar && todayCalendar.entry) {
-        setText('featureText', todayCalendar.entry.featureText || homepage.featureText);
-        setText('featureItemOneTime', todayCalendar.entry.featureItemOneTime || homepage.featureItemOneTime);
-        setText('featureItemOneText', todayCalendar.entry.featureItemOneText || homepage.featureItemOneText);
-        setText('featureItemTwoTime', todayCalendar.entry.featureItemTwoTime || homepage.featureItemTwoTime);
-        setText('featureItemTwoText', todayCalendar.entry.featureItemTwoText || homepage.featureItemTwoText);
-      } else {
-        setText('featureText', homepage.featureText);
-        setText('featureItemOneTime', homepage.featureItemOneTime);
-        setText('featureItemOneText', homepage.featureItemOneText);
-        setText('featureItemTwoTime', homepage.featureItemTwoTime);
-        setText('featureItemTwoText', homepage.featureItemTwoText);
+        setText('featureText', todayCalendar.entry.featureText);
+        setText('featureItemOneTime', todayCalendar.entry.featureItemOneTime);
+        setText('featureItemOneText', todayCalendar.entry.featureItemOneText);
+        setText('featureItemTwoTime', todayCalendar.entry.featureItemTwoTime);
+        setText('featureItemTwoText', todayCalendar.entry.featureItemTwoText);
       }
+
+      setText('introHeading', homepage.intro?.heading);
+      setText('introText', homepage.intro?.text);
+
+      setText('offerTitle', homepage.offer_card?.title);
+      setText('offerText', homepage.offer_card?.text);
+
+      setText('spotlightTitle', homepage.spotlight_card?.title);
+      setText('spotlightText', homepage.spotlight_card?.text);
+
+      setText('highlightsHeading', homepage.highlights_intro?.heading);
+      setText('highlightsText', homepage.highlights_intro?.text);
+
+      setText('announcementsTag', homepage.announcements_card?.tag);
+      setText('announcementsTitle', homepage.announcements_card?.title);
+      setText('announcementsText', homepage.announcements_card?.text);
+
+      setText('eventsTag', homepage.events_card?.tag);
+      setText('eventsTitle', homepage.events_card?.title);
+      setText('eventsText', homepage.events_card?.text);
+
+      setText('engagementTag', homepage.engagement_card?.tag);
+      setText('engagementTitle', homepage.engagement_card?.title);
+      setText('engagementText', homepage.engagement_card?.text);
     }
 
     document.addEventListener('DOMContentLoaded', initHomepage);

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gallery | After Teen Lounge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <style>
+    .gallery-page-shell {
+      padding: 36px 0 60px;
+    }
+
+    .gallery-hero {
+      margin-bottom: 28px;
+      padding: 28px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at top left, rgba(107, 188, 255, 0.14), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 35%),
+        rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+    }
+
+    .gallery-hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+    }
+
+    .gallery-hero p {
+      margin: 0;
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
+      gap: 22px;
+      justify-content: start;
+      align-items: start;
+    }
+
+    .gallery-card {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(107, 188, 255, 0.28);
+      box-shadow: 0 16px 30px rgba(0,0,0,0.2);
+    }
+
+    .gallery-image-wrap {
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      flex-shrink: 0;
+    }
+
+    .gallery-image-wrap img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .gallery-card-body {
+      padding: 16px 16px 18px;
+    }
+
+    .gallery-card-title {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .gallery-card-desc {
+      margin: 0;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .gallery-empty {
+      padding: 26px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.72);
+    }
+  </style>
+</head>
+<body>
+  <div class="site-wrap">
+    <div class="site-shell">
+      <header class="site-nav">
+        <div class="brand">
+          <img src="/images/after.jpg" alt="After Teen Lounge logo" />
+          <div class="brand-text">
+            <div class="brand-title">After Teen Lounge</div>
+            <div class="brand-subtitle">Study · Play · Connect</div>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/events">Events</a>
+          <a href="/gallery">Gallery</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </header>
+
+      <main class="gallery-page-shell">
+        <section class="gallery-hero">
+          <h1>Gallery</h1>
+          <p class="muted">
+            A look at moments, spaces, activities, and community highlights from the lounge.
+          </p>
+        </section>
+
+        <section>
+          <div id="gallery" class="gallery-grid"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    async function loadGallery() {
+      try {
+        const res = await fetch('/api/public/gallery');
+        const images = await res.json();
+
+        const container = document.getElementById('gallery');
+        container.innerHTML = '';
+
+        if (!images.length) {
+          container.innerHTML = '<div class="gallery-empty">No images yet.</div>';
+          return;
+        }
+
+        images.forEach(img => {
+          const card = document.createElement('article');
+          card.className = 'gallery-card';
+
+          card.innerHTML = `
+            <div class="gallery-image-wrap">
+              <img src="${img.file_path}" alt="${img.alt_text || ''}">
+            </div>
+            <div class="gallery-card-body">
+              <h3 class="gallery-card-title">${img.title || 'Gallery Image'}</h3>
+              <p class="gallery-card-desc">${img.description || ''}</p>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        document.getElementById('gallery').innerHTML =
+          '<div class="gallery-empty">Could not load gallery images.</div>';
+      }
+    }
+
+    loadGallery();
+  </script>
+</body>
+</html>

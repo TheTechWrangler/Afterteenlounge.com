@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .gallery-admin-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .editor-section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .editor-section h3 {
+      margin: 0 0 8px 0;
+    }
+
+    .editor-section p {
+      margin: 0 0 16px 0;
+      opacity: 0.75;
+    }
+
+    .editor-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      opacity: 0.88;
+    }
+
+    .editor-form input,
+    .editor-form textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      padding: 14px 16px;
+      font-size: 0.98rem;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    .editor-form input {
+      min-height: 52px;
+    }
+
+    .editor-form textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .editor-form input:focus,
+    .editor-form textarea:focus {
+      outline: 2px solid rgba(139, 92, 246, 0.55);
+      border-color: rgba(139, 92, 246, 0.65);
+    }
+
+    .gallery-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 720px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .gallery-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 14px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .gallery-item.is-hidden {
+      opacity: 0.62;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .gallery-item img {
+      width: 110px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .gallery-meta h4 {
+      margin: 0 0 6px 0;
+      font-size: 1rem;
+    }
+
+    .gallery-meta p {
+      margin: 0 0 6px 0;
+      opacity: 0.78;
+      line-height: 1.4;
+      font-size: 0.92rem;
+    }
+
+    .gallery-meta .tiny {
+      font-size: 0.82rem;
+      opacity: 0.64;
+    }
+
+    .gallery-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      opacity: 0.7;
+      padding: 10px 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    @media (max-width: 980px) {
+      .gallery-admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="brand-text">
+          <h1>After Admin</h1>
+          <p>Gallery Manager</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-link" href="/admin">Dashboard</a>
+        <a class="nav-link" href="/admin/homepage">Homepage</a>
+        <a class="nav-link" href="/admin/calendar">Calendar</a>
+        <a class="nav-link" href="/admin/contact">Contact</a>
+        <a class="nav-link active" href="/admin/gallery">Gallery</a>
+        <a class="nav-link" href="/logout">Logout</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <strong>Gallery</strong>
+        <p>Upload images here, then review and manage what is already live in the gallery.</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h2>Gallery Manager</h2>
+          <p>Add images and manage the current front-facing gallery items.</p>
+        </div>
+        <div class="status-pill">Editor</div>
+      </header>
+
+      <section class="module-card">
+        <div class="gallery-admin-grid">
+          <div class="editor-section">
+            <h3>Upload Image</h3>
+            <p>Add a new gallery image.</p>
+
+            <form action="/admin/gallery/upload" method="POST" enctype="multipart/form-data" class="editor-form">
+              <div class="form-group">
+                <label for="galleryImage">Image File</label>
+                <input id="galleryImage" type="file" name="galleryImage" accept="image/*" required />
+              </div>
+
+              <div class="form-group">
+                <label for="title">Title</label>
+                <input id="title" type="text" name="title" />
+              </div>
+
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="altText">Alt Text</label>
+                <input id="altText" type="text" name="altText" />
+              </div>
+
+              <div class="form-group">
+                <label for="sortOrder">Sort Order</label>
+                <input id="sortOrder" type="number" name="sortOrder" value="0" />
+              </div>
+
+              <button class="btn btn-primary" type="submit">Upload Image</button>
+            </form>
+          </div>
+
+          <div class="editor-section">
+            <h3>Current Gallery</h3>
+            <p>These are the images currently in the gallery system.</p>
+
+            <div id="galleryList" class="gallery-list">
+              <div class="empty-state">Loading gallery images...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    async function loadGalleryList() {
+      const list = document.getElementById('galleryList');
+
+      try {
+        const res = await fetch('/api/admin/gallery');
+        const items = await res.json();
+
+        if (!items.length) {
+          list.innerHTML = '<div class="empty-state">No gallery images yet.</div>';
+          return;
+        }
+
+        list.innerHTML = items.map(item => `
+          <div class="gallery-item ${item.is_visible ? '' : 'is-hidden'}">
+            <img src="${item.file_path}" alt="${item.alt_text || ''}">
+            <div class="gallery-meta">
+              <h4>${item.title || 'Untitled image'}</h4>
+              <p>${item.description || 'No description yet.'}</p>
+              <div class="tiny">Sort: ${item.sort_order ?? 0}</div>
+              <div class="tiny">${item.file_path}</div>
+              <div class="status-badge">${item.is_visible ? 'Visible' : 'Hidden'}</div>
+
+              <div class="gallery-actions">
+                <form method="POST" action="/admin/gallery/toggle">
+                  <input type="hidden" name="imageId" value="${item.id}">
+                  <button class="btn btn-secondary" type="submit">
+                    ${item.is_visible ? 'Hide' : 'Show'}
+                  </button>
+                </form>
+
+                <form method="POST" action="/admin/gallery/delete">
+                  <input type="hidden" name="imageId" value="${item.id}">
+                  <button class="btn btn-secondary" type="submit" onclick="return confirm('Delete this image?')">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        list.innerHTML = '<div class="empty-state">Could not load gallery images.</div>';
+      }
+    }
+
+    loadGalleryList();
+  </script>
+</body>
+</html>

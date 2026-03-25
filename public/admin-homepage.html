@@ -3,47 +3,273 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Homepage Editor</title>
+  <title>After Teen Lounge - Homepage Editor</title>
   <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .editor-section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .editor-section h3 {
+      margin: 0 0 8px 0;
+    }
+
+    .editor-section p {
+      margin: 0 0 16px 0;
+      opacity: 0.75;
+    }
+
+    .editor-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .editor-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .editor-form label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      opacity: 0.88;
+    }
+
+    .editor-form input,
+    .editor-form textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      padding: 14px 16px;
+      font-size: 0.98rem;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    .editor-form input {
+      min-height: 52px;
+    }
+
+    .editor-form textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .editor-form input:focus,
+    .editor-form textarea:focus {
+      outline: 2px solid rgba(139, 92, 246, 0.55);
+      border-color: rgba(139, 92, 246, 0.65);
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="brand-text">
+          <h1>After Admin</h1>
+          <p>Homepage Editor</p>
+        </div>
+      </div>
 
-  <div class="admin-wrap">
+    <nav class="sidebar-nav">
+  <a class="nav-link" href="/admin">Dashboard</a>
+  <a class="nav-link" href="/admin/homepage">Homepage</a>
+  <a class="nav-link" href="/admin/calendar">Calendar</a>
+  <a class="nav-link" href="/admin/contact">Contact</a>
+  <a class="nav-link" href="/admin/gallery">Gallery</a>
+  <a class="nav-link" href="/logout">Logout</a>
+</nav>
 
-    <h1>Homepage Editor</h1>
+      <div class="sidebar-footer">
+        <strong>Homepage Content</strong>
+        <p>Edit the main text blocks for the public homepage. Calendar content stays in the calendar editor.</p>
+      </div>
+    </aside>
 
-    <div style="margin-bottom:20px;">
-      <a class="btn btn-secondary" href="/admin">← Back</a>
-    </div>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h2>Homepage Editor</h2>
+          <p>Edit the homepage text in larger fields so you can actually see what you’re changing.</p>
+        </div>
+        <div class="status-pill">Editor</div>
+      </header>
 
-    <form method="POST" action="/admin/homepage/save">
+      <section class="module-card">
+        <form method="POST" action="/admin/homepage/save" class="editor-form">
+          <div class="editor-grid">
+            <div class="editor-section">
+              <h3>Hero Section</h3>
+              <p>Main top-of-page message.</p>
 
-      <h2>Hero</h2>
+              <div class="form-group">
+                <label for="heroHeading">Hero Heading</label>
+                <input id="heroHeading" name="heroHeading" type="text" placeholder="Hero Heading" />
+              </div>
 
-      <input name="heroHeading" placeholder="Hero Heading" />
-      <input name="heroText" placeholder="Hero Text" />
+              <div class="form-group">
+                <label for="heroText">Hero Text</label>
+                <textarea id="heroText" name="heroText" placeholder="Hero Text"></textarea>
+              </div>
+            </div>
 
-      <h2>Buttons</h2>
+            <div class="editor-section">
+              <h3>Intro Section</h3>
+              <p>The first section under the hero.</p>
 
-      <input name="primaryButtonText" placeholder="Primary Button Text" />
-      <input name="secondaryButtonText" placeholder="Secondary Button Text" />
+              <div class="form-group">
+                <label for="introHeading">Intro Heading</label>
+                <input id="introHeading" name="introHeading" type="text" placeholder="Intro Heading" />
+              </div>
 
-      <h2>Feature Panel</h2>
+              <div class="form-group">
+                <label for="introText">Intro Text</label>
+                <textarea id="introText" name="introText" placeholder="Intro Text"></textarea>
+              </div>
+            </div>
 
-      <input name="featureTitle" placeholder="Feature Title" />
-      <input name="featureText" placeholder="Feature Text" />
+            <div class="editor-section">
+              <h3>What We Offer Card</h3>
+              <p>Left support card text.</p>
 
-      <input name="featureItemOneTime" placeholder="Item One Time" />
-      <input name="featureItemOneText" placeholder="Item One Text" />
+              <div class="form-group">
+                <label for="offerTitle">Card Title</label>
+                <input id="offerTitle" name="offerTitle" type="text" placeholder="What We Offer Title" />
+              </div>
 
-      <input name="featureItemTwoTime" placeholder="Item Two Time" />
-      <input name="featureItemTwoText" placeholder="Item Two Text" />
+              <div class="form-group">
+                <label for="offerText">Card Text</label>
+                <textarea id="offerText" name="offerText" placeholder="What We Offer Text"></textarea>
+              </div>
+            </div>
 
-      <br><br>
-      <button class="btn btn-primary" type="submit">Save</button>
+            <div class="editor-section">
+              <h3>Community Spotlight Card</h3>
+              <p>Right support card text.</p>
 
-    </form>
+              <div class="form-group">
+                <label for="spotlightTitle">Card Title</label>
+                <input id="spotlightTitle" name="spotlightTitle" type="text" placeholder="Community Spotlight Title" />
+              </div>
 
+              <div class="form-group">
+                <label for="spotlightText">Card Text</label>
+                <textarea id="spotlightText" name="spotlightText" placeholder="Community Spotlight Text"></textarea>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Highlights Intro</h3>
+              <p>Heading and description above the three lower cards.</p>
+
+              <div class="form-group">
+                <label for="highlightsHeading">Section Heading</label>
+                <input id="highlightsHeading" name="highlightsHeading" type="text" placeholder="Highlights Heading" />
+              </div>
+
+              <div class="form-group">
+                <label for="highlightsText">Section Text</label>
+                <textarea id="highlightsText" name="highlightsText" placeholder="Highlights Intro Text"></textarea>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Announcements Card</h3>
+              <p>First lower card.</p>
+
+              <div class="form-group">
+                <label for="announcementsTag">Tag</label>
+                <input id="announcementsTag" name="announcementsTag" type="text" placeholder="Announcements Tag" />
+              </div>
+
+              <div class="form-group">
+                <label for="announcementsTitle">Title</label>
+                <input id="announcementsTitle" name="announcementsTitle" type="text" placeholder="Announcements Title" />
+              </div>
+
+              <div class="form-group">
+                <label for="announcementsText">Text</label>
+                <textarea id="announcementsText" name="announcementsText" placeholder="Announcements Text"></textarea>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Events Card</h3>
+              <p>Second lower card.</p>
+
+              <div class="form-group">
+                <label for="eventsTag">Tag</label>
+                <input id="eventsTag" name="eventsTag" type="text" placeholder="Events Tag" />
+              </div>
+
+              <div class="form-group">
+                <label for="eventsTitle">Title</label>
+                <input id="eventsTitle" name="eventsTitle" type="text" placeholder="Events Title" />
+              </div>
+
+              <div class="form-group">
+                <label for="eventsText">Text</label>
+                <textarea id="eventsText" name="eventsText" placeholder="Events Text"></textarea>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Engagement Card</h3>
+              <p>Third lower card.</p>
+
+              <div class="form-group">
+                <label for="engagementTag">Tag</label>
+                <input id="engagementTag" name="engagementTag" type="text" placeholder="Engagement Tag" />
+              </div>
+
+              <div class="form-group">
+                <label for="engagementTitle">Title</label>
+                <input id="engagementTitle" name="engagementTitle" type="text" placeholder="Engagement Title" />
+              </div>
+
+              <div class="form-group">
+                <label for="engagementText">Text</label>
+                <textarea id="engagementText" name="engagementText" placeholder="Engagement Text"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button class="btn btn-primary" type="submit">Save Homepage</button>
+            <a class="btn btn-secondary" href="/admin">Back to Dashboard</a>
+          </div>
+        </form>
+      </section>
+    </main>
   </div>
 
   <script>
@@ -51,14 +277,42 @@
       const res = await fetch('/api/homepage');
       const data = await res.json();
 
-      Object.keys(data).forEach(key => {
+      const map = {
+        heroHeading: data.hero?.heroHeading || '',
+        heroText: data.hero?.heroText || '',
+
+        introHeading: data.intro?.heading || '',
+        introText: data.intro?.text || '',
+
+        offerTitle: data.offer_card?.title || '',
+        offerText: data.offer_card?.text || '',
+
+        spotlightTitle: data.spotlight_card?.title || '',
+        spotlightText: data.spotlight_card?.text || '',
+
+        highlightsHeading: data.highlights_intro?.heading || '',
+        highlightsText: data.highlights_intro?.text || '',
+
+        announcementsTag: data.announcements_card?.tag || '',
+        announcementsTitle: data.announcements_card?.title || '',
+        announcementsText: data.announcements_card?.text || '',
+
+        eventsTag: data.events_card?.tag || '',
+        eventsTitle: data.events_card?.title || '',
+        eventsText: data.events_card?.text || '',
+
+        engagementTag: data.engagement_card?.tag || '',
+        engagementTitle: data.engagement_card?.title || '',
+        engagementText: data.engagement_card?.text || ''
+      };
+
+      Object.keys(map).forEach(key => {
         const el = document.querySelector(`[name="${key}"]`);
-        if (el) el.value = data[key];
+        if (el) el.value = map[key];
       });
     }
 
     loadHomepageData();
   </script>
-
 </body>
 </html>

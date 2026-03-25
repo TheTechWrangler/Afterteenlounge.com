@@ -2,39 +2,213 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Contact</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>After Teen Lounge - Contact Editor</title>
   <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .editor-section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .editor-section h3 {
+      margin: 0 0 8px 0;
+    }
+
+    .editor-section p {
+      margin: 0 0 16px 0;
+      opacity: 0.75;
+    }
+
+    .editor-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .editor-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .editor-form label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      opacity: 0.88;
+    }
+
+    .editor-form input,
+    .editor-form textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      padding: 14px 16px;
+      font-size: 0.98rem;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    .editor-form input {
+      min-height: 52px;
+    }
+
+    .editor-form textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .editor-form input:focus,
+    .editor-form textarea:focus {
+      outline: 2px solid rgba(139, 92, 246, 0.55);
+      border-color: rgba(139, 92, 246, 0.65);
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="admin-wrap">
-    <h1>Contact Page Editor</h1>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <img class="brand-logo" src="/images/after.jpg" alt="After Teen Lounge logo" />
+        <div class="brand-text">
+          <h1>After Admin</h1>
+          <p>Contact Editor</p>
+        </div>
+      </div>
 
-    <form id="contactForm" method="POST" action="/admin/contact/save">
-      
-      <h2>Intro</h2>
-      <input type="text" name="introHeading" placeholder="Heading" />
-      <textarea name="introText" placeholder="Intro text"></textarea>
+   <nav class="sidebar-nav">
+  <a class="nav-link" href="/admin">Dashboard</a>
+  <a class="nav-link" href="/admin/homepage">Homepage</a>
+  <a class="nav-link" href="/admin/calendar">Calendar</a>
+  <a class="nav-link" href="/admin/contact">Contact</a>
+  <a class="nav-link" href="/admin/gallery">Gallery</a>
+  <a class="nav-link" href="/logout">Logout</a>
+</nav>
+      <div class="sidebar-footer">
+        <strong>Contact Page</strong>
+        <p>Update the contact page text, address, links, and image path from one place.</p>
+      </div>
+    </aside>
 
-      <h2>Image</h2>
-      <input type="text" name="imagePath" placeholder="/images/front.png" />
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h2>Contact Editor</h2>
+          <p>Edit the public contact page using larger, easier-to-read fields.</p>
+        </div>
+        <div class="status-pill">Editor</div>
+      </header>
 
-      <h2>Address</h2>
-      <input type="text" name="addressLineOne" placeholder="Address Line 1" />
-      <input type="text" name="addressLineTwo" placeholder="Address Line 2" />
+      <section class="module-card">
+        <form id="contactForm" method="POST" action="/admin/contact/save" class="editor-form">
+          <div class="editor-grid">
+            <div class="editor-section">
+              <h3>Intro</h3>
+              <p>Main heading and intro text for the contact page.</p>
 
-      <h2>Contact Info</h2>
-      <input type="text" name="phone" placeholder="Phone" />
-      <input type="text" name="email" placeholder="Email" />
+              <div class="form-group">
+                <label for="introHeading">Intro Heading</label>
+                <input id="introHeading" type="text" name="introHeading" placeholder="Heading" />
+              </div>
 
-      <h2>Social</h2>
-      <input type="text" name="facebook" placeholder="Facebook link" />
-      <input type="text" name="instagram" placeholder="Instagram link" />
-      <input type="text" name="x" placeholder="X / Twitter link" />
+              <div class="form-group">
+                <label for="introText">Intro Text</label>
+                <textarea id="introText" name="introText" placeholder="Intro text"></textarea>
+              </div>
+            </div>
 
-      <br><br>
-      <button type="submit">Save</button>
-    </form>
+            <div class="editor-section">
+              <h3>Image</h3>
+              <p>Current image still uses a path field for now.</p>
+
+              <div class="form-group">
+                <label for="imagePath">Image Path</label>
+                <input id="imagePath" type="text" name="imagePath" placeholder="/images/front.png" />
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Address</h3>
+              <p>Location lines shown on the contact page.</p>
+
+              <div class="form-group">
+                <label for="addressLineOne">Address Line 1</label>
+                <input id="addressLineOne" type="text" name="addressLineOne" placeholder="Address Line 1" />
+              </div>
+
+              <div class="form-group">
+                <label for="addressLineTwo">Address Line 2</label>
+                <input id="addressLineTwo" type="text" name="addressLineTwo" placeholder="Address Line 2" />
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Contact Info</h3>
+              <p>Basic public contact details.</p>
+
+              <div class="form-group">
+                <label for="phone">Phone</label>
+                <input id="phone" type="text" name="phone" placeholder="Phone" />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" type="text" name="email" placeholder="Email" />
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <h3>Social Links</h3>
+              <p>Public social media links.</p>
+
+              <div class="form-group">
+                <label for="facebook">Facebook</label>
+                <input id="facebook" type="text" name="facebook" placeholder="Facebook link" />
+              </div>
+
+              <div class="form-group">
+                <label for="instagram">Instagram</label>
+                <input id="instagram" type="text" name="instagram" placeholder="Instagram link" />
+              </div>
+
+              <div class="form-group">
+                <label for="x">X / Twitter</label>
+                <input id="x" type="text" name="x" placeholder="X / Twitter link" />
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button class="btn btn-primary" type="submit">Save Contact Page</button>
+            <a class="btn btn-secondary" href="/admin">Back to Dashboard</a>
+          </div>
+        </form>
+      </section>
+    </main>
   </div>
 
   <script>
