@@ -382,6 +382,106 @@ router.post('/admin/gallery/toggle', requireRole(['super_admin', 'admin', 'limit
    USER ADMIN API
 ======================= */
 
+router.post('/api/admin/users/:id/delete', requireRole(['super_admin']), (req, res) => {
+  const userId = Number(req.params.id);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+
+  if (req.session?.user?.id === userId) {
+    return res.status(400).json({ error: 'You cannot delete your own account.' });
+  }
+
+  db.get(
+    `SELECT id, role, is_active FROM users WHERE id = ?`,
+    [userId],
+    (findErr, userRow) => {
+      if (findErr) {
+        return res.status(500).json({ error: 'Failed to find user.' });
+      }
+
+      if (!userRow) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+
+      if (userRow.role === 'super_admin' && userRow.is_active === 1) {
+        db.get(
+          `
+          SELECT COUNT(*) AS count
+          FROM users
+          WHERE role = 'super_admin' AND is_active = 1
+          `,
+          (countErr, countRow) => {
+            if (countErr) {
+              return res.status(500).json({ error: 'Failed to validate delete action.' });
+            }
+
+            if ((countRow?.count || 0) <= 1) {
+              return res.status(400).json({ error: 'You cannot delete the last active super admin.' });
+            }
+
+            db.run(`DELETE FROM users WHERE id = ?`, [userId], function (deleteErr) {
+              if (deleteErr) {
+                return res.status(500).json({ error: 'Failed to delete user.' });
+              }
+
+              return res.json({ success: true });
+            });
+          }
+        );
+      } else {
+        db.run(`DELETE FROM users WHERE id = ?`, [userId], function (deleteErr) {
+          if (deleteErr) {
+            return res.status(500).json({ error: 'Failed to delete user.' });
+          }
+
+          return res.json({ success: true });
+        });
+      }
+    }
+  );
+});
+
+router.post('/api/admin/users/:id/reset-password', requireRole(['super_admin']), async (req, res) => {
+  const userId = Number(req.params.id);
+  const newPassword = String(req.body.password || '');
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    db.run(
+      `
+      UPDATE users
+      SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+      `,
+      [passwordHash, userId],
+      function (err) {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to reset password.' });
+        }
+
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'User not found.' });
+        }
+
+        return res.json({ success: true });
+      }
+    );
+  } catch {
+    return res.status(500).json({ error: 'Failed to reset password.' });
+  }
+});
+
 router.get('/api/admin/users', requireRole(['super_admin']), (_req, res) => {
   db.all(
     `

@@ -14,7 +14,9 @@
       --accent: #2563eb;
       --accent-dark: #1d4ed8;
       --danger: #b91c1c;
+      --danger-bg: #fee2e2;
       --success: #166534;
+      --success-bg: #dcfce7;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
       --radius: 16px;
     }
@@ -94,8 +96,8 @@
     }
 
     .btn-danger {
-      background: #fee2e2;
-      color: #991b1b;
+      background: var(--danger-bg);
+      color: var(--danger);
     }
 
     .btn-danger:hover {
@@ -103,8 +105,8 @@
     }
 
     .btn-success {
-      background: #dcfce7;
-      color: #166534;
+      background: var(--success-bg);
+      color: var(--success);
     }
 
     .btn-success:hover {
@@ -189,7 +191,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 820px;
+      min-width: 1040px;
     }
 
     th,
@@ -218,19 +220,24 @@
     }
 
     .pill.active {
-      background: #dcfce7;
-      color: #166534;
+      background: var(--success-bg);
+      color: var(--success);
     }
 
     .pill.inactive {
-      background: #fee2e2;
-      color: #991b1b;
+      background: var(--danger-bg);
+      color: var(--danger);
     }
 
     .row-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .row-actions button {
+      padding: 8px 12px;
+      font-size: 0.85rem;
     }
 
     .empty {
@@ -265,7 +272,7 @@
 
     <section class="panel">
       <h2>Create New User</h2>
-      <p class="note">For now, this page is restricted to super admin only.</p>
+      <p class="note">This page is restricted to super admin only.</p>
 
       <form id="createUserForm">
         <div class="grid">
@@ -377,6 +384,22 @@
               >
                 ${user.is_active ? 'Deactivate' : 'Reactivate'}
               </button>
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick='resetPassword(${Number(user.id)}, ${JSON.stringify(String(user.username))})'
+              >
+                Reset Password
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-danger"
+                onclick='deleteUser(${Number(user.id)}, ${JSON.stringify(String(user.username))})'
+              >
+                Delete
+              </button>
             </div>
           </td>
         </tr>
@@ -432,6 +455,82 @@
         await loadUsers();
       } catch (error) {
         usersMessage.textContent = error.message || 'Failed to update user status.';
+        usersMessage.className = 'message error';
+      }
+    }
+
+    async function resetPassword(userId, username) {
+      const newPassword = window.prompt(`Enter a new password for "${username}" (minimum 8 characters):`);
+
+      if (newPassword === null) {
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        usersMessage.textContent = 'Password must be at least 8 characters.';
+        usersMessage.className = 'message error';
+        return;
+      }
+
+      usersMessage.textContent = '';
+      usersMessage.className = 'message';
+
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({ password: newPassword })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to reset password.');
+        }
+
+        usersMessage.textContent = `Password reset for "${username}".`;
+        usersMessage.className = 'message success';
+
+        await loadUsers();
+      } catch (error) {
+        usersMessage.textContent = error.message || 'Failed to reset password.';
+        usersMessage.className = 'message error';
+      }
+    }
+
+    async function deleteUser(userId, username) {
+      const confirmed = window.confirm(
+        `Delete user "${username}"? This cannot be undone.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      usersMessage.textContent = '';
+      usersMessage.className = 'message';
+
+      try {
+        const response = await fetch(`/api/admin/users/${userId}/delete`, {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to delete user.');
+        }
+
+        usersMessage.textContent = 'User deleted.';
+        usersMessage.className = 'message success';
+
+        await loadUsers();
+      } catch (error) {
+        usersMessage.textContent = error.message || 'Failed to delete user.';
         usersMessage.className = 'message error';
       }
     }
